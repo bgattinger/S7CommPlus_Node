@@ -38,7 +38,7 @@ const pingPLC_test = edge.func(function() {
                 return "Error connecting";
             }
             return "Connection successful";
-            }
+        }
     }
     */
 });
