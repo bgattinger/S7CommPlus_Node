@@ -1,0 +1,33 @@
+using System;
+using System.Reflection;
+
+public class Startup
+{
+    public string Invoke()
+    {
+        // load the S7CommPlusDriver.dll
+        string dllPath = @"C:\Users\brett\\SVS\S7CommPlus_Node\S7CommPlusDriver.dll";
+        var s7CommPlusAssembly = Assembly.LoadFrom(dllPath);
+
+        // create instance of S7CommPlusConnection class
+        var s7CommPlusConnection_Class = s7CommPlusAssembly.GetType("Siemens.S7CommPlusConnection");
+        var conn = Activator.CreateInstance(s7CommPlusConnection_Class);
+
+        // get S7CommPlusconnection Class Connect method
+        var s7CommPlusConnection_Class_Method_Connect = s7CommPlusConnection_Class.GetMethod("Connect");
+
+        // Define the parameters for the Connect method (IP and password)
+        string ipAddress = "192.168.18.25";  
+        string password = ""; 
+
+        // Call the Connect method
+        int connectionResult = (int)s7CommPlusConnection_Class_Method_Connect.Invoke(conn, new object[] { ipAddress, password });
+
+        // Check the result of the connection
+        if (connectionResult != 0)
+        {
+            return "Error connecting";
+        }
+        return "Connection successful";
+    }
+}

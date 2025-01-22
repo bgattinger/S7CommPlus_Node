@@ -9,6 +9,6 @@
   "author": "Brett Gattinger, Cesar Nettle",
   "license": "ISC",
   "dependencies": {
-    "edge": "^7.10.1"
+    "edge-js": "^23.1.4"
   }
 }
