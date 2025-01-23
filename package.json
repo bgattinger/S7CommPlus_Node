@@ -4,11 +4,17 @@
   "description": "A Node.js version of the S7CommPlus program originally developed in C# by Cesar Nettle",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
   },
   "author": "Brett Gattinger, Cesar Nettle",
   "license": "ISC",
   "dependencies": {
-    "edge-js": "^23.1.4"
+    "edge-js": "^23.1.4",
+    "electron": "^34.0.0",
+    "electron-edge-js": "^33.0.5"
+  },
+  "devDependencies": {
+    "electron-rebuild": "^3.2.9"
   }
 }

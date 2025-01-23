@@ -14,7 +14,7 @@ const pingPLC_test = edge.func(function() {
             string dllPath = @"C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDriver.dll";
             var s7CommPlusAssembly = Assembly.LoadFrom(dllPath);
 
-             System.Console.WriteLine("1");
+            System.Console.WriteLine("1");
 
             var s7CommPlusConnection_Class = s7CommPlusAssembly.GetType("S7CommPlusDriver.S7CommPlusConnection");
             var conn = Activator.CreateInstance(s7CommPlusConnection_Class);
