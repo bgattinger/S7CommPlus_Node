@@ -61,27 +61,16 @@ const driver = edge.func(function() {
                 System.Console.WriteLine("Getting DataBlockInfo List...");
 
                 dbInfoList = Activator.CreateInstance(DatablockInfoList_Type);
-                int dataBlockListAccessResult = (int)S7CommPlusConnection_Method_GetListOfDatablocks.Invoke(conn, new object[] {dbInfoList});
+                object[] parameters1 = new object[] { dbInfoList };
+
+
+                int dataBlockListAccessResult = (int)S7CommPlusConnection_Method_GetListOfDatablocks.Invoke(conn, parameters1);
                 if (dataBlockListAccessResult != 0)
                 {
                     return "Error";
                 }
 
-                System.Console.WriteLine("dbInfoList: " + string.Join("",dbInfoList));
-
-                var countProperty = dbInfoList.GetType().GetProperty("Count");
-                int count = (int)countProperty.GetValue(dbInfoList);
-                if (count > 0) 
-                {
-                    System.Console.WriteLine("dbInfoList is not empty \n ");
-
-                    var indexProperty = dbInfoList.GetType().GetProperty("Item");
-                    var firstElement = indexProperty.GetValue(dbInfoList, new object[] { 0 });
-
-                    System.Console.WriteLine("First Datablock Info: " + firstElement.ToString());
-                } else {
-                    System.Console.WriteLine("dbInfoList is empty \n ");
-                }
+                dbInfoList = parameters1[0];
 
                 return dbInfoList;
 
