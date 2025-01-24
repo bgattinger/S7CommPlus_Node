@@ -10,7 +10,7 @@ const createS7Connection = edge.func(function() {
     public class Startup 
     {
 
-        private static string dllPath = @"C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDriver.dll";
+        private static string dllPath = @"C:\Users\brett\SVS\S7CommPlus_Node\dlls\S7CommPlusDriver.dll";
         private static Assembly S7CommPlusAssembly = Assembly.LoadFrom(dllPath);
         private static Type S7CommPlusConnection_Class = S7CommPlusAssembly.GetType("S7CommPlusDriver.S7CommPlusConnection");
         private static MethodInfo S7CommPlusConnection_Class_Method_Connect = S7CommPlusConnection_Class.GetMethod("Connect");
