@@ -1,36 +1,39 @@
+////'use strict';
+////var http = require('http');
+////var port = process.env.PORT || 1337;
+
+////http.createServer(function (req, res) {
+////    res.writeHead(200, { 'Content-Type': 'text/plain' });
+////    res.end('Hello World\n');
+////}).listen(port);
+
 const edge = require('edge-js');
 
 var Connect = edge.func({
     assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', // path to .dll
-    typeName: 'S7CommPlusDriverManagerInterface.Methods',
-    methodName: 'Connect'
+    typeName: 'S7CommPlusDllWrapper.DllWrapper',
+    methodName: 'Invoke'
 });
 
-var GetDatablockInfo = edge.func({
-    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', // path to .dll
-    typeName: 'S7CommPlusDriverManagerInterface.Methods',
-    methodName: 'GetDatablockInfo'
-});
+console.log("Connecting...");
 
-Connect({ ipAddress: "192.168.18.25", password: "", timeout: 5000 }, (error, result) => {
+Connect({ command: "createConnectionObject" }, (error, result) => {
     if (error) throw error;
-    var connRes = result;
-    console.log("code: " + result);
-    if (connRes == 3) {
-        console.log("connection request timed out");
-        return;
-    }
-    if (connRes == 0) {
-        console.log("connection established!");
-
-        GetDatablockInfo(null, (error, result) => {
-            if (error) throw error;
-            console.log(result);
-        });
-
-        return;
-    }
+    console.log(result);
 });
 
+Connect({ command: "initiateConnection", IPaddress: "192.168.18.25", password: "", timeout: 5000 }, (error, result) => {
+    if (error) throw error;
+    console.log(result);
+});
 
+Connect({ command: "getDataBlockInfoList" }, (error, result) => {
+    if (error) throw error;
+    console.log(result);
+});
+
+Connect({ command: "readVariable", tagSymbol: "\"DB_HardwareDataTypes\".DB_DYN_1002"}, (error, result) => {
+    if (error) throw error;
+    console.log(result);
+});
 
