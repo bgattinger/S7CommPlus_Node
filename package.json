@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build_Zlib": "dotnet build ./Zlib.net -property:Configuration=Debug -property:Platform=x64",
     "build_S7CPD" : "dotnet build ./S7CommPlusDriver -property:Configuration=Debug -property:Platform=x64",
-    "build_S7CPDW" : "dotnet build ./S7CommPlusDriverWrapper -property:Configuration=Debug -property:Platform=x64",
+    "build_S7CPDW" : "dotnet build ./S7CommPlusDLLWrapper -property:Configuration=Debug -property:Platform=x64",
     "build" : "npm run build_Zlib && npm run build_S7CPD && npm run build_S7CPDW"
   },
   "author": "Brett Gattinger, Cesar Nettle",
