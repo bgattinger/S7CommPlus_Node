@@ -69,5 +69,15 @@
       <Name>S7CommPlusDriver</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup >
+    <None Include="..\S7CommPlusDriver\bin\x64\$(Configuration)\libcrypto-3-$(Platform).dll">
+      <Link>libcrypto-3-$(Platform).dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\S7CommPlusDriver\bin\x64\$(Configuration)\libssl-3-$(Platform).dll">
+      <Link>libssl-3-$(Platform).dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

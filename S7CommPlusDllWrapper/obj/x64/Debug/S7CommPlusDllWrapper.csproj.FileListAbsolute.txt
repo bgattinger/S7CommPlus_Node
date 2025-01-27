@@ -5,11 +5,8 @@ C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\bin\Debug\zlib.net.dll
 C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\bin\Debug\S7CommPlusDriver.pdb
 C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\bin\Debug\S7CommPlusDriver.dll.config
 C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\bin\Debug\zlib.net.pdb
-C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\obj\x64\Debug\S7CommPlusDllWrapper.csproj.AssemblyReference.cache
-C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\obj\x64\Debug\S7CommPlusDllWrapper.csproj.CoreCompileInputs.cache
-C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\obj\x64\Debug\S7CommPl.9E2ECFE8.Up2Date
-C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\obj\x64\Debug\S7CommPlusDllWrapper.dll
-C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\obj\x64\Debug\S7CommPlusDllWrapper.pdb
+C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\bin\x64\Debug\libcrypto-3-x64.dll
+C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\bin\x64\Debug\libssl-3-x64.dll
 C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\bin\x64\Debug\S7CommPlusDllWrapper.dll
 C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\bin\x64\Debug\S7CommPlusDllWrapper.pdb
 C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\bin\x64\Debug\S7CommPlusDriver.dll
@@ -17,3 +14,8 @@ C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\bin\x64\Debug\zlib.net.d
 C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\bin\x64\Debug\S7CommPlusDriver.pdb
 C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\bin\x64\Debug\S7CommPlusDriver.dll.config
 C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\bin\x64\Debug\zlib.net.pdb
+C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\obj\x64\Debug\S7CommPlusDllWrapper.csproj.AssemblyReference.cache
+C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\obj\x64\Debug\S7CommPlusDllWrapper.csproj.CoreCompileInputs.cache
+C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\obj\x64\Debug\S7CommPl.9E2ECFE8.Up2Date
+C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\obj\x64\Debug\S7CommPlusDllWrapper.dll
+C:\Users\brett\SVS\S7CommPlus_Node\S7CommPlusDLLWrapper\obj\x64\Debug\S7CommPlusDllWrapper.pdb

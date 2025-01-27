@@ -15,32 +15,26 @@ namespace S7CommPlusDriverWrapper
         private static S7CommPlusConnection conn = null;
         private static List<S7CommPlusConnection.DatablockInfo> dbInfoList = null;
 
-        public static int Connect_(string ipAddress, string password, int timeout) {
-            System.Console.WriteLine("Establishing Connection...");
-            conn = new S7CommPlusConnection();
-            return conn.Connect(ipAddress, password, timeout);
-        }
-
-        public static int GetDatablockInfo_() {
-            return conn.GetListOfDatablocks(out dbInfoList);
-        }
-    }
-
-
-}
-
-namespace S7CommPlusDriverManagerInterface
-{
-    class Methods
-    {
         public async Task<object> Connect(dynamic input) {
-            return await Task.Run(() => DriverManager.Connect_(
-                input.ipAddress, input.password, input.timeout
-            ));
+            string ipAddress = (string)input.ipAddress;
+            string password = (string)input.password;
+            int timeout = (int)input.timeout;
+
+            conn = new S7CommPlusConnection();
+
+            int connRes = conn.Connect(ipAddress, password, timeout);
+            return connRes;
         }
 
-        public async Task<object> GetDatablockInfo(dynamic input) {
-            return await Task.Run(() => DriverManager.GetDatablockInfo_());
+        public async Task<object> Disconnect(dynamic input)
+        {
+            if (conn != null)
+            {
+                conn.Disconnect();
+                conn = null;
+                return "Disconnected Successfully";
+            }
+            return "No Active Connection";
         }
     }
 }
