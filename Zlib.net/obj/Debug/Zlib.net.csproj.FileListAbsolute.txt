@@ -1,0 +1,6 @@
+C:\Users\brett\SVS\S7CommPlus_Node\Zlib.net\bin\x64\Release\zlib.net.dll
+C:\Users\brett\SVS\S7CommPlus_Node\Zlib.net\bin\x64\Release\zlib.net.pdb
+C:\Users\brett\SVS\S7CommPlus_Node\Zlib.net\obj\Debug\Zlib.net.csproj.AssemblyReference.cache
+C:\Users\brett\SVS\S7CommPlus_Node\Zlib.net\obj\Debug\Zlib.net.csproj.CoreCompileInputs.cache
+C:\Users\brett\SVS\S7CommPlus_Node\Zlib.net\obj\Debug\zlib.net.dll
+C:\Users\brett\SVS\S7CommPlus_Node\Zlib.net\obj\Debug\zlib.net.pdb

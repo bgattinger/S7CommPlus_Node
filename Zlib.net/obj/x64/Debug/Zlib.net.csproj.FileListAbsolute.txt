@@ -1,0 +1,12 @@
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\Zlib.net\bin\x64\Debug\zlib.net.dll
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\Zlib.net\bin\x64\Debug\zlib.net.pdb
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\Zlib.net\obj\x64\Debug\Zlib.net.csproj.AssemblyReference.cache
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\Zlib.net\obj\x64\Debug\Zlib.net.csproj.CoreCompileInputs.cache
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\Zlib.net\obj\x64\Debug\zlib.net.dll
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\Zlib.net\obj\x64\Debug\zlib.net.pdb
+C:\Users\brett\SVS\S7CommPlus_Node\Zlib.net\bin\x64\Debug\zlib.net.dll
+C:\Users\brett\SVS\S7CommPlus_Node\Zlib.net\bin\x64\Debug\zlib.net.pdb
+C:\Users\brett\SVS\S7CommPlus_Node\Zlib.net\obj\x64\Debug\Zlib.net.csproj.AssemblyReference.cache
+C:\Users\brett\SVS\S7CommPlus_Node\Zlib.net\obj\x64\Debug\Zlib.net.csproj.CoreCompileInputs.cache
+C:\Users\brett\SVS\S7CommPlus_Node\Zlib.net\obj\x64\Debug\zlib.net.dll
+C:\Users\brett\SVS\S7CommPlus_Node\Zlib.net\obj\x64\Debug\zlib.net.pdb

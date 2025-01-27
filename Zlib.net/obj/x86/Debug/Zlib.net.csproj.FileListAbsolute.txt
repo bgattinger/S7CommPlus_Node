@@ -1,0 +1,6 @@
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\Zlib.net\bin\x86\Debug\zlib.net.dll
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\Zlib.net\bin\x86\Debug\zlib.net.pdb
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\Zlib.net\obj\x86\Debug\Zlib.net.csproj.AssemblyReference.cache
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\Zlib.net\obj\x86\Debug\Zlib.net.csproj.CoreCompileInputs.cache
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\Zlib.net\obj\x86\Debug\zlib.net.dll
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\Zlib.net\obj\x86\Debug\zlib.net.pdb

@@ -1,0 +1,6 @@
+
+
+Commands:
+    dotnet build ./Zlib.net -property:Configuration=Debug -property:Platform=x64
+    dotnet build ./S7CommPlusDriver -property:Configuration=Debug -property:Platform=x64
+    dotnet build ./S7CommPlusDLLWrapper -property:Configuration=Debug -property:Platform=x64

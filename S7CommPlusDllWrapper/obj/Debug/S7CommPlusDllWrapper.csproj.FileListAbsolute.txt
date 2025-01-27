@@ -1,0 +1,12 @@
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\S7CommPlusDllWrapper\bin\Debug\S7CommPlusDllWrapper.dll
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\S7CommPlusDllWrapper\bin\Debug\S7CommPlusDllWrapper.pdb
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\S7CommPlusDllWrapper\bin\Debug\S7CommPlusDriver.dll
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\S7CommPlusDllWrapper\bin\Debug\zlib.net.dll
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\S7CommPlusDllWrapper\bin\Debug\S7CommPlusDriver.pdb
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\S7CommPlusDllWrapper\bin\Debug\S7CommPlusDriver.dll.config
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\S7CommPlusDllWrapper\bin\Debug\zlib.net.pdb
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\S7CommPlusDllWrapper\obj\Debug\S7CommPlusDllWrapper.csproj.AssemblyReference.cache
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\S7CommPlusDllWrapper\obj\Debug\S7CommPlusDllWrapper.csproj.CoreCompileInputs.cache
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\S7CommPlusDllWrapper\obj\Debug\S7CommPl.9E2ECFE8.Up2Date
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\S7CommPlusDllWrapper\obj\Debug\S7CommPlusDllWrapper.dll
+C:\Users\brett\Source\Repos\S7CommPlusDriverJSWrapper\src\S7CommPlusDllWrapper\obj\Debug\S7CommPlusDllWrapper.pdb
