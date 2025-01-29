@@ -21,6 +21,19 @@ var GetPObject_atDBInfoListIndex = edge.func({
     methodName: 'GetPObject_atDBInfoListIndex'
 });
 
+var GetDataBlockVariables_atDBInfoListIndex = edge.func({
+    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
+    typeName: 'S7CommPlusDriverWrapper.DriverManager',
+    methodName: 'GetDataBlockVariables_atDBInfoListIndex'
+});
+
+var GetDataBlockNamesandVariables = edge.func({
+    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
+    typeName: 'S7CommPlusDriverWrapper.DriverManager',
+    methodName: 'GetDataBlockNamesandVariables'
+});
+
+
 var GetTag = edge.func({
     assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
     typeName: 'S7CommPlusDriverWrapper.DriverManager',
@@ -53,6 +66,8 @@ Connect(connParams, (error, connRes) => {
     console.log("Successful connection to PLC (connection code: ", connRes, ")");
 });
 
+console.log("\n====================================\n");
+
 GetDataBlockInfoList(null, (error, result) => {
     if (error) {
         console.log("Error connecting to PLC: ", error);
@@ -60,6 +75,8 @@ GetDataBlockInfoList(null, (error, result) => {
     }
     console.log(result);
 });
+
+console.log("\n====================================\n");
 
 GetPObject_atDBInfoListIndex({index: 1}, (error, result) => {
     if (error) {
@@ -69,6 +86,28 @@ GetPObject_atDBInfoListIndex({index: 1}, (error, result) => {
     console.log(result); 
 });
 
+console.log("\n====================================\n");
+
+GetDataBlockVariables_atDBInfoListIndex({index: 1}, (error, result) => {
+    if (error) {
+        console.log("Error: ", error);
+        return;
+    }
+    console.log(result);
+});
+
+console.log("\n====================================\n");
+
+GetDataBlockNamesandVariables(null, (error, result) => {
+    if (error) {
+        console.log("Error: ", error);
+        return;
+    }
+    console.log(result);
+});
+
+console.log("\n====================================\n");
+
 GetTag({tagSymbol: "DB_CharacterStrings.String_Hello_World"}, (error, result) => {
     if (error) {
         console.log("Error connecting to PLC: ", error);
@@ -76,6 +115,8 @@ GetTag({tagSymbol: "DB_CharacterStrings.String_Hello_World"}, (error, result) =>
     }
     console.log(result);
 });
+
+console.log("\n====================================\n");
 
 console.log("Disconnecting from PLC");
 Disconnect(null, (disconnectError, disconnectResult) => {

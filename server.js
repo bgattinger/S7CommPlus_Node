@@ -10,6 +10,11 @@ var GetDataBlockInfoList = edge.func({
     typeName: 'S7CommPlusDriverWrapper.DriverManager',
     methodName: 'GetDataBlockInfoList'
 });
+var GetDataBlockNamesandVariables = edge.func({
+    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
+    typeName: 'S7CommPlusDriverWrapper.DriverManager',
+    methodName: 'GetDataBlockNamesandVariables'
+});
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -69,13 +74,11 @@ app.post('/connect', (req, res) => {
 });
 
 app.post('/DatablockInfoList', (req,res) => {
-
     // initalize empty json response object
     let response = {};
     GetDataBlockInfoList(null, (error, dbInfoList) => {
         console.log("Retrieving Datablock Information List from PLC @ IP: " + currentPlcIP);
         response.mssg1 = "Retrieving Datablock Information List from PLC @ IP: " + currentPlcIP;
-
         if (error) {
             console.log("Error retrieiving DatablockInfo @ IP: " + currentPlcIP + " (error code: " + error+ ")");
             response.mssg2 = "Error retrieving Datablock Information List from PLC @ IP: " + currentPlcIP;
@@ -93,6 +96,26 @@ app.post('/DatablockInfoList', (req,res) => {
     });
     
 })
+
+app.post('/DatablockNameVars', (req, res) => {
+    let response = {};
+    GetDataBlockNamesandVariables(null, (error, dbNameVars) => {
+        console.log("Retrieving Datablock Names and Variables from PLC @ IP: " + currentPlcIP);
+        response.mssg1 = "Retrieving Datablock Names and Variables from PLC @ IP: " + currentPlcIP;
+        if (error) {
+            console.log("Error retrieiving Datablock Names and Variables @ IP: " + currentPlcIP + " (error code: " + error+ ")");
+            response.mssg2 = "Error retrieving Datablock Names and Variables from PLC @ IP: " + currentPlcIP;
+            console.log("Error: ", error);
+            return;
+        }
+
+        console.log("Successfully retrieved Datablock Names and Variables from PLC @ IP: " + currentPlcIP);
+        response.mssg2 = "Successfully retrieved Datablock Names and Variables from PLC @ IP: " + currentPlcIP;
+        response.content = dbNameVars;
+
+        return res.json(response);
+    });    
+});
 
 // Start server
 app.listen(PORT, () => {

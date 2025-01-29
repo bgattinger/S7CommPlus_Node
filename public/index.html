@@ -9,6 +9,11 @@
             overflow: hidden; /* Prevent content from being visible */
             transition: max-height 0.3s ease-in-out; /* Smooth expand/collapse */
         }
+        .DBvarNames_child {
+            max-height: 0; /* Start collapsed */
+            overflow: hidden; /* Prevent content from being visible */
+            transition: max-height 0.3s ease-in-out; /* Smooth expand/collapse */
+        }
     </style>
     <title>Enter IP Address</title>
 </head>
@@ -21,12 +26,12 @@
     <p id="ConnectionResult"></p> <!-- This paragraph updates dynamically -->
 
     <button type="button" id="btn_getDBinfoList">Get Datablock Information List</button>
+    <ul id ="DBinfoList"></ul> <!-- This list updates dynamically -->
 
+    <button type="button" id="btn_getDBNameVars">Get Datablock Names and Variables</button>
     <!--DEBUGGING
-    <p id="DatablockInfoResult"></p>
-    -->
-    
-    <ul id ="DBinfoList"></ul>
+    <p id="DBNameVars1"></p> -->
+    <ul id ="DBNameVars"></ul> <!-- This list updates dynamically -->
 
     <script>
         document.getElementById('btn_connect').addEventListener('click', async function(event) {
@@ -47,6 +52,9 @@
             document.getElementById('ConnectionResult').innerText = `${JSON.stringify(data, null, 2)}`;
         });
 
+
+
+
         document.getElementById("btn_getDBinfoList").addEventListener('click', async function(event) {
             event.preventDefault();
 
@@ -57,9 +65,6 @@
             const data = await response.json();
 
             console.log("data should be here" + data);
-
-            //DEBUGGING
-            //document.getElementById('DatablockInfoResult').innerText = `${JSON.stringify(data, null, 2)}`;
 
             data.content.forEach(item => {
                 const listItem = document.createElement('li');
@@ -83,8 +88,6 @@
 
                 listItem.appendChild(nestedList);
 
-                document.getElementById("DBinfoList").appendChild(listItem);
-
                 listItem.addEventListener('click', function() {
                     event.stopPropagation(); // prevent event bubblng
 
@@ -93,12 +96,53 @@
                     } else {
                         nestedList.style.maxHeight = "0px"; // Collapse smoothly
                     }
-                    // OLD
-                    // this.parentElement.querySelector(".DBinfoBlock_child").classList.toggle("active");
-                })
-            });
-            
+                });
+
+                document.getElementById("DBinfoList").appendChild(listItem);
+            }); 
         });
+
+
+
+
+        document.getElementById("btn_getDBNameVars").addEventListener('click', async function(event) {
+            event.preventDefault();
+
+            const response = await fetch('/DatablockNameVars', {
+                method: 'POST'
+            });
+
+            const data = await response.json(); // Parse JSON response
+
+            for (const [key, value] of Object.entries(data.content)) {
+                const datablockNameListItem = document.createElement("li");
+                datablockNameListItem.innerHTML = key;
+                
+                const datablockVariablesNestedList = document.createElement("ul");
+                datablockVariablesNestedList.classList.add('DBvarNames_child');
+                if (Array.isArray(value.Names)) {
+                    value.Names.forEach(variable => {
+                        const variableNameChildListItem = document.createElement("li");
+                        variableNameChildListItem.innerHTML = variable;
+                        datablockVariablesNestedList.appendChild(variableNameChildListItem);
+                    });
+                }
+                datablockNameListItem.appendChild(datablockVariablesNestedList);
+
+                datablockNameListItem.addEventListener('click', function() {
+                    event.stopPropagation(); // prevent event bubblng
+
+                    if (datablockVariablesNestedList.style.maxHeight === "0px") {
+                        datablockVariablesNestedList.style.maxHeight = datablockVariablesNestedList.scrollHeight + "px"; // Expand smoothly
+                    } else {
+                        datablockVariablesNestedList.style.maxHeight = "0px"; // Collapse smoothly
+                    }
+                });
+
+                document.getElementById("DBNameVars").appendChild(datablockNameListItem);
+            }
+        });
+
     </script>
 </body>
 </html>

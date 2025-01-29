@@ -34,7 +34,6 @@ namespace S7CommPlusDriverWrapper
         }
 
         public async Task<object> GetPObject_atDBInfoListIndex(dynamic input) {
-            
             int index = (int)input.index;
             S7CommPlusConnection.DatablockInfo targetDB = DriverManager.dbInfoList[index];
             UInt32 target_relid = targetDB.db_block_ti_relid;
@@ -44,6 +43,34 @@ namespace S7CommPlusDriverWrapper
             return pObj;
         }
         //^^^^USE THIS GUY TO GET full DB INFO DETAILS
+
+        public async Task<object> GetDataBlockVariables_atDBInfoListIndex(dynamic input) {
+            int index = (int)input.index;
+            S7CommPlusConnection.DatablockInfo targetDB = DriverManager.dbInfoList[index];
+            UInt32 target_relid = targetDB.db_block_ti_relid;
+
+            PObject pObj = conn.getTypeInfoByRelId(target_relid);
+
+            PVarnameList datablockVars = pObj.VarnameList;
+
+            return datablockVars;
+        }
+
+        public async Task<object> GetDataBlockNamesandVariables(dynamic input) {
+            Dictionary<string, PVarnameList> DatablockNameVars = new Dictionary<string, PVarnameList>();
+
+            int dataBlockListAccessResult = conn.GetListOfDatablocks(out dbInfoList);
+            if (dataBlockListAccessResult != 0)
+            {
+                return "Error";
+            }
+
+            foreach (S7CommPlusConnection.DatablockInfo dbinfo in dbInfoList) {
+                DatablockNameVars[dbinfo.db_name] = conn.getTypeInfoByRelId(dbinfo.db_block_ti_relid).VarnameList;
+            }
+
+            return DatablockNameVars;
+        }
 
         public async Task<object> GetTag(dynamic input) {
             PlcTag tag = conn.getPlcTagBySymbol(input.tagSymbol);
