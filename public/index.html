@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter IP Address</title>
+</head>
+<body>
+    <h2>Enter an IP Address</h2>
+    <form id="ipForm">
+        <input type="text" id="ipInput" name="ipAddress" placeholder="Enter IP" required>
+        <button type="button" id="btn_connect">Submit</button>
+    </form>
+    <p id="ConnectionResult"></p> <!-- This paragraph updates dynamically -->
+
+    <button type="button" id="btn_getDBinfoList">Get Datablock Information List</button>
+
+    <!--DEBUGGING
+    <p id="DatablockInfoResult"></p>
+    -->
+    
+    <ul id ="DBinfoList"></ul>
+
+    <script>
+        document.getElementById('btn_connect').addEventListener('click', async function(event) {
+            event.preventDefault(); // Prevent page reload
+
+            const ipAddress = document.getElementById('ipInput').value;
+
+            // Send the data to the backend using Fetch API
+            const response = await fetch('/connect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `ipAddress=${encodeURIComponent(ipAddress)}`
+            });
+
+            const data = await response.json(); // Parse JSON response
+
+            // Update the paragraph with the received IP
+            document.getElementById('ConnectionResult').innerText = `${JSON.stringify(data, null, 2)}`;
+        });
+
+        document.getElementById("btn_getDBinfoList").addEventListener('click', async function(event) {
+            event.preventDefault();
+
+            const response = await fetch('/DatablockInfoList', {
+                method: 'POST'
+            });
+
+            const data = await response.json();
+
+            console.log("data should be here" + data);
+
+            //DEBUGGING
+            //document.getElementById('DatablockInfoResult').innerText = `${JSON.stringify(data, null, 2)}`;
+
+            data.content.forEach(item => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `<strong>${item.db_name}</strong>`;
+
+                const nestedList = document.createElement('ul');
+
+                const dbNum = document.createElement('li');
+                dbNum.innerHTML = `DB Number: ${item.db_number}`;
+                nestedList.appendChild(dbNum);
+
+                const dbBlockRelID = document.createElement('li');
+                dbBlockRelID.innerHTML = `DB Number: ${item.db_number}`;
+                nestedList.appendChild(dbBlockRelID);
+
+                const dbBlockTIRelID = document.createElement('li');
+                dbBlockTIRelID.innerHTML = `DB Number: ${item.db_number}`;
+                nestedList.appendChild(dbBlockTIRelID);
+
+                listItem.appendChild(nestedList);
+                
+                document.getElementById("DBinfoList").appendChild(listItem);
+            });
+            
+        });
+    </script>
+</body>
+</html>

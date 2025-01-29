@@ -6,20 +6,22 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build_Zlib": "dotnet build ./Zlib.net -property:Configuration=Debug -property:Platform=x64",
-    "build_S7CPD" : "dotnet build ./S7CommPlusDriver -property:Configuration=Debug -property:Platform=x64",
-    "build_S7CPDW" : "dotnet build ./S7CommPlusDLLWrapper -property:Configuration=Debug -property:Platform=x64",
-    "build" : "npm run build_Zlib && npm run build_S7CPD && npm run build_S7CPDW",
+    "build_S7CPD": "dotnet build ./S7CommPlusDriver -property:Configuration=Debug -property:Platform=x64",
+    "build_S7CPDW": "dotnet build ./S7CommPlusDLLWrapper -property:Configuration=Debug -property:Platform=x64",
+    "build": "npm run build_Zlib && npm run build_S7CPD && npm run build_S7CPDW",
     "clean_Zlib": "dotnet clean ./Zlib.net -property:Configuration=Debug -property:Platform=x64",
-    "clean_S7CPD" : "dotnet clean ./S7CommPlusDriver -property:Configuration=Debug -property:Platform=x64",
-    "clean_S7CPDW" : "dotnet clean ./S7CommPlusDLLWrapper -property:Configuration=Debug -property:Platform=x64",
-    "clean" : "npm run clean_Zlib && npm run clean_S7CPD && npm run clean_S7CPDW"
+    "clean_S7CPD": "dotnet clean ./S7CommPlusDriver -property:Configuration=Debug -property:Platform=x64",
+    "clean_S7CPDW": "dotnet clean ./S7CommPlusDLLWrapper -property:Configuration=Debug -property:Platform=x64",
+    "clean": "npm run clean_Zlib && npm run clean_S7CPD && npm run clean_S7CPDW"
   },
   "author": "Brett Gattinger, Cesar Nettle",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.20.3",
     "edge-js": "^23.1.4",
     "electron": "^34.0.0",
-    "electron-edge-js": "^33.0.5"
+    "electron-edge-js": "^33.0.5",
+    "express": "^4.21.2"
   },
   "devDependencies": {
     "electron-rebuild": "^3.2.9"
