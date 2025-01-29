@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .DBinfoBlock_child {
+            max-height: 0; /* Start collapsed */
+            overflow: hidden; /* Prevent content from being visible */
+            transition: max-height 0.3s ease-in-out; /* Smooth expand/collapse */
+        }
+    </style>
     <title>Enter IP Address</title>
 </head>
 <body>
@@ -81,11 +88,10 @@
                 listItem.addEventListener('click', function() {
                     event.stopPropagation(); // prevent event bubblng
 
-                    const childList = this.querySelector(".DBinfoBlock_child");
-                    if (childList.style.display === "none") {
-                        childList.style.display = "block";
+                    if (nestedList.style.maxHeight === "0px") {
+                        nestedList.style.maxHeight = nestedList.scrollHeight + "px"; // Expand smoothly
                     } else {
-                        childList.style.display = "none";
+                        nestedList.style.maxHeight = "0px"; // Collapse smoothly
                     }
                     // OLD
                     // this.parentElement.querySelector(".DBinfoBlock_child").classList.toggle("active");
