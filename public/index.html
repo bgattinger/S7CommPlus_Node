@@ -56,9 +56,11 @@
 
             data.content.forEach(item => {
                 const listItem = document.createElement('li');
+                listItem.classList.add('DBinfoBlock_parent')
                 listItem.innerHTML = `<strong>${item.db_name}</strong>`;
 
                 const nestedList = document.createElement('ul');
+                nestedList.classList.add('DBinfoBlock_child')
 
                 const dbNum = document.createElement('li');
                 dbNum.innerHTML = `DB Number: ${item.db_number}`;
@@ -73,8 +75,21 @@
                 nestedList.appendChild(dbBlockTIRelID);
 
                 listItem.appendChild(nestedList);
-                
+
                 document.getElementById("DBinfoList").appendChild(listItem);
+
+                listItem.addEventListener('click', function() {
+                    event.stopPropagation(); // prevent event bubblng
+
+                    const childList = this.querySelector(".DBinfoBlock_child");
+                    if (childList.style.display === "none") {
+                        childList.style.display = "block";
+                    } else {
+                        childList.style.display = "none";
+                    }
+                    // OLD
+                    // this.parentElement.querySelector(".DBinfoBlock_child").classList.toggle("active");
+                })
             });
             
         });
