@@ -1,30 +1,64 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
 using System.Threading.Tasks;
 using S7CommPlusDriver;
 using S7CommPlusDriver.ClientApi;
+
+
+//Note: all function return values are boxed in a Task<object> before being returned
+// The values are then unboxed on the javascript side
 
 namespace S7CommPlusDriverWrapper
 {
     public class DriverManager
     {
-        private static S7CommPlusConnection conn = null;
-        private static List<S7CommPlusConnection.DatablockInfo> dbInfoList = null;
+        //private static S7CommPlusConnection conn = null;
+        //private static List<S7CommPlusConnection.DatablockInfo> dbInfoList = null;
 
+        private static Dictionary<UInt32, S7CommPlusConnection> plcConns = new Dictionary<uint, S7CommPlusConnection>();
+        
         public async Task<object> Connect(dynamic input) {
+            // parse input object
             string ipAddress = (string)input.ipAddress;
             string password = (string)input.password;
             int timeout = (int)input.timeout;
 
-            conn = new S7CommPlusConnection();
+            // init output object (initialize to unsuccseful connection values)
+            var output = (connRes: (int)-1, sessionID2: (UInt32)0);
 
-            int connRes = conn.Connect(ipAddress, password, timeout);
-            return connRes;
+            S7CommPlusConnection conn = new S7CommPlusConnection();
+            output.connRes = await Task.Run(() => conn.Connect(ipAddress, password, timeout));
+            if (output.connRes == 0) {
+                // connection successful
+                plcConns.Add(conn.SessionId2, conn);
+                output.sessionID2 = conn.SessionId2;
+            } //else
+            // connection unsuccessful 
+            
+            return output;
         }
 
-        public async Task<object> GetDataBlockInfoList(dynamic input) {
+        public async Task<object> Disconnect(dynamic input)
+        {
+            // parse input
+            UInt32 targetConnSessID = (UInt32)input.sessionID2;
 
-            int dataBlockListAccessResult = conn.GetListOfDatablocks(out dbInfoList);
+            // init output object (initialize to unsuccseful disconnect values)
+            var output = (int)0;
+
+            if (plcConns.ContainsKey(targetConnSessID)) {
+                await Task.Run(() => plcConns[targetConnSessID].Disconnect());
+                plcConns.Remove(targetConnSessID);
+                output = 1;
+            } // else 
+
+            return output;
+        }
+
+        /*public async Task<object> GetDataBlockInfoList(dynamic input) {
+            List<S7CommPlusConnection.DatablockInfo> dbInfoList;
+            int dataBlockListAccessResult = await Task.Run(() => conn.GetListOfDatablocks(out dbInfoList));
 
             if (dataBlockListAccessResult != 0)
             {
@@ -74,25 +108,19 @@ namespace S7CommPlusDriverWrapper
 
         public async Task<object> GetTag(dynamic input) {
             PlcTag tag = conn.getPlcTagBySymbol(input.tagSymbol);
+
+            System.Console.WriteLine("HERE");
+            System.Console.WriteLine(tag);
                 
             if (tag == null) return null;             
 
             PlcTags tags = new PlcTags();
             tags.AddTag(tag);
-            if (tags.ReadTags(conn) != 0) return null;
+            //if (tags.ReadTags(conn) != 0) return null;
 
             return tag;
-        }
+        }*/
 
-        public async Task<object> Disconnect(dynamic input)
-        {
-            if (conn != null)
-            {
-                conn.Disconnect();
-                conn = null;
-                return "Disconnected Successfully";
-            }
-            return "No Active Connection";
-        }
+        
     }
 }

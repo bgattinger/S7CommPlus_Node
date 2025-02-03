@@ -29,8 +29,6 @@
     <ul id ="DBinfoList"></ul> <!-- This list updates dynamically -->
 
     <button type="button" id="btn_getDBNameVars">Get Datablock Names and Variables</button>
-    <!--DEBUGGING
-    <p id="DBNameVars1"></p> -->
     <ul id ="DBNameVars"></ul> <!-- This list updates dynamically -->
 
     <script>
@@ -51,7 +49,6 @@
             // Update the paragraph with the received IP
             document.getElementById('ConnectionResult').innerText = `${JSON.stringify(data, null, 2)}`;
         });
-
 
 
 
@@ -101,7 +98,6 @@
                 document.getElementById("DBinfoList").appendChild(listItem);
             }); 
         });
-
 
 
 
