@@ -17,6 +17,7 @@
   "author": "Brett Gattinger, Cesar Nettle",
   "license": "ISC",
   "dependencies": {
+    "async": "^3.2.6",
     "body-parser": "^1.20.3",
     "edge-js": "^23.1.4",
     "electron": "^34.0.0",

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using System.Security;
 using System.Threading.Tasks;
 using S7CommPlusDriver;
 using S7CommPlusDriver.ClientApi;
@@ -56,18 +58,108 @@ namespace S7CommPlusDriverWrapper
             return output;
         }
 
-        /*public async Task<object> GetDataBlockInfoList(dynamic input) {
-            List<S7CommPlusConnection.DatablockInfo> dbInfoList;
-            int dataBlockListAccessResult = await Task.Run(() => conn.GetListOfDatablocks(out dbInfoList));
+        public async Task<object> GetDataBlockInfoList(dynamic input) {
 
-            if (dataBlockListAccessResult != 0)
-            {
-                return "Error";
-            }                
-            return dbInfoList;
+            // parse input
+            UInt32 targetConnSessID = (UInt32)input.sessionID2;
+
+            // init output object (initialize to unsuccseful read values)
+            List<S7CommPlusConnection.DatablockInfo> dbInfoList = null;
+            var output = (
+                accessRes: (int)-1, 
+                dbInfoList: dbInfoList 
+            );
+
+            if (plcConns.ContainsKey(targetConnSessID)) {
+                output.accessRes = await Task.Run(
+                    () => plcConns[targetConnSessID].GetListOfDatablocks(out output.dbInfoList)
+                );
+            } // else
+
+            return output;
         }
 
-        public async Task<object> GetPObject_atDBInfoListIndex(dynamic input) {
+        public async Task<object> GetTags(dynamic input) {
+
+            // parse input
+            UInt32 targetConnSessID = (UInt32)input.sessionID2;
+            string[] tagSymbols = ((IEnumerable<object>)input.tagSymbols).Cast<string>().ToArray();
+
+            // init output object (initialize to unsuccseful read values)
+            List<PlcTag> readTags = new List<PlcTag>();
+            var output = (
+                accessRes: (int)-1, 
+                readTags: readTags
+            );
+
+            PlcTags tagsToRead = new PlcTags();
+            if (plcConns.ContainsKey(targetConnSessID)) {
+
+                // load the tag symbols into PlcTag objects to be read
+                foreach (string tagSymbol in tagSymbols) {
+                    // create tag ojbect
+                    PlcTag tag = plcConns[targetConnSessID].getPlcTagBySymbol(tagSymbol);
+                    
+                    if (tag != null) {
+                        readTags.Add(tag);
+                        tagsToRead.AddTag(readTags[readTags.Count()-1]);
+                    }   
+                }
+
+                // read tag values into PLC tag objects
+                output.accessRes = await Task.Run(() => tagsToRead.ReadTags(plcConns[targetConnSessID]));
+                if (output.accessRes == 0) {
+                    output.readTags = readTags;
+                } 
+
+            }
+
+            // return tag objects populated with read values
+            return output;
+        }
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+        /*public async Task<object> GetDataBlockContentList(dynamic input) {
+
+            // parse input
+            UInt32 targetConnSessID = (UInt32)input.sessionID2;
+
+            // init output object (initialize to unsuccseful disconnect values)
+            Dictionary<string, string> dbContentList = new Dictionary<string, string>();
+            var output = (
+                accessRes: (int)-1, 
+                dbContentList: dbContentList
+            );
+
+            if (plcConns.ContainsKey(targetConnSessID)) {
+                List<S7CommPlusConnection.DatablockInfo> dbInfoList = null;
+                output.accessRes = await Task.Run(
+                    () => plcConns[targetConnSessID].GetListOfDatablocks(out dbInfoList)
+                );
+
+                foreach (S7CommPlusConnection.DatablockInfo dbInfo in dbInfoList) {
+
+                }
+
+            } // else
+            
+        }*/
+
+
+        /*public async Task<object> GetPObject_atDBInfoListIndex(dynamic input) {
             int index = (int)input.index;
             S7CommPlusConnection.DatablockInfo targetDB = DriverManager.dbInfoList[index];
             UInt32 target_relid = targetDB.db_block_ti_relid;
@@ -106,20 +198,7 @@ namespace S7CommPlusDriverWrapper
             return DatablockNameVars;
         }
 
-        public async Task<object> GetTag(dynamic input) {
-            PlcTag tag = conn.getPlcTagBySymbol(input.tagSymbol);
-
-            System.Console.WriteLine("HERE");
-            System.Console.WriteLine(tag);
-                
-            if (tag == null) return null;             
-
-            PlcTags tags = new PlcTags();
-            tags.AddTag(tag);
-            //if (tags.ReadTags(conn) != 0) return null;
-
-            return tag;
-        }*/
+        */
 
         
     }
