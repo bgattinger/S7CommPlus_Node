@@ -293,11 +293,46 @@ const GetTags = (ipAddress, tagSymbolList) => {
 }
 
 
+var GetDataBlockContent_ = edge.func({
+    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
+    typeName: 'S7CommPlusDriverWrapper.DriverManager',
+    methodName: 'GetDataBlockContent'
+});
+const GetDataBlockContent = (ipAddress, dataBlockName) => {
+    return new Promise((resolve,reject) => {
+
+        // check for IP
+        if ( !(plcConns.has(ipAddress)) ) {
+            reject(new Error(
+                "no such PLC connection @ IP: " + ipAddress + " exists"
+            ));
+            return;
+        } // else
+        // retrieve corresponding sessionID for IP
+        let sessionID2 = plcConns.get(ipAddress);
+
+        // init input object
+        input = {
+            sessionID2: sessionID2,
+            dataBlockName: dataBlockName
+        }
+        GetDataBlockContent_(input, (error, output) => {
+            if (error) {
+                reject(error);
+                return;
+            } // else 
+            // GetTags executed successfully
+    
+            resolve(JSON.stringify(output, null, 2));
+        });
+    });
+}
+
 
 
 async function main() {
 
-    targetPlcIP = "192.168.18.26"
+    targetPlcIP = "192.168.18.25"
     
     try {
         console.log("\n=== Testing Connect ===\n");
@@ -310,17 +345,21 @@ async function main() {
         result = await GetDataBlockInfoList(targetPlcIP);
         console.log("successfully retrieved Datablock Information List from PLC @ IP: " + result.ipAddress);
         console.log("Datablock Information List: \n" + result.dbInfoList);
-        console.log("\n====================================\n");*/
+        console.log("\n====================================\n");
 
         console.log("\n=== Testing GetTags ===\n");
-        const tagSymbols = ["Test.Start", "Test.Value1", "Test.Value2"];
+        const tagSymbols = ["Data.Int", "Data.Dint", "Data.Real"];
         result = await GetTags(targetPlcIP, tagSymbols);
         console.log("successfully retrieved Tag values from PLC @ IP: " + result.ipAddress);
         console.log("Read Tag values: \n" + result.readTags);
+        console.log("\n====================================\n");*/
+
+        console.log("\n=== Testing GetDataBlockContent ===\n");
+        const dataBlockName = "GlobalData";
+        result = await GetDataBlockContent(targetPlcIP, dataBlockName);
+        console.log("successfully retrieved datablock: " + dataBlockName + "\n\tfrom PLC @ IP: " + targetPlcIP);
+        console.log("Datablock Content: \n" + result);
         console.log("\n====================================\n");
-
-
-        //await new Promise(resolve => setTimeout(resolve, 5000));   
 
         console.log("\n=== Testing Disconnect ===\n");
         console.log("Disconnecting from PLC @ IP : " + targetPlcIP);

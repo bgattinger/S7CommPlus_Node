@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
+using System.Net.Mime;
 using System.Runtime.Remoting.Messaging;
 using System.Security;
 using System.Threading.Tasks;
@@ -118,45 +120,73 @@ namespace S7CommPlusDriverWrapper
             return output;
         }
 
-
-
-
-
-
-
-
-
-
- 
-
-
-
-
-        /*public async Task<object> GetDataBlockContentList(dynamic input) {
+        public async Task<object> GetDataBlockContent(dynamic input) {
 
             // parse input
             UInt32 targetConnSessID = (UInt32)input.sessionID2;
+            string targetDataBlockName = (string)input.dataBlockName;
 
-            // init output object (initialize to unsuccseful disconnect values)
-            Dictionary<string, string> dbContentList = new Dictionary<string, string>();
-            var output = (
-                accessRes: (int)-1, 
-                dbContentList: dbContentList
-            );
+            // init output object 
+            var output = new object();
 
             if (plcConns.ContainsKey(targetConnSessID)) {
                 List<S7CommPlusConnection.DatablockInfo> dbInfoList = null;
-                output.accessRes = await Task.Run(
-                    () => plcConns[targetConnSessID].GetListOfDatablocks(out dbInfoList)
-                );
+                int accessRes = plcConns[targetConnSessID].GetListOfDatablocks(out dbInfoList);
 
-                foreach (S7CommPlusConnection.DatablockInfo dbInfo in dbInfoList) {
-
+                if (accessRes != 0) {
+                    output = "Error executing GetListofDataBlocks()";
+                    return output;
                 }
 
+                S7CommPlusConnection.DatablockInfo targetDataBlock = null; 
+                foreach ( S7CommPlusConnection.DatablockInfo dataBlock in dbInfoList) {
+                    if (dataBlock.db_name == targetDataBlockName) {
+                        targetDataBlock = dataBlock;
+                        break;
+                    }
+                    output = "Error: DataBlock with name: " + targetDataBlockName + " not found";
+                }
+
+                PObject pObj1 = plcConns[targetConnSessID].getTypeInfoByRelId(targetDataBlock.db_block_ti_relid);
+
+                Dictionary<string, string> trgtDBVarDims = new Dictionary<string, string>();
+                for (int i = 0; i < pObj1.VarnameList.Names.Count; ++i) {
+                    string varName = pObj1.VarnameList.Names[i];
+                    if (pObj1.VartypeList.Elements[i].OffsetInfoType.Is1Dim()) {
+                        trgtDBVarDims[varName] = "is 1 Dimensional";
+                    } else if (pObj1.VartypeList.Elements[i].OffsetInfoType.IsMDim()) {
+                        trgtDBVarDims[varName] = "is M Dimensional";
+                    } else {
+                        trgtDBVarDims[varName] = "is single value";
+                    }
+                    if (pObj1.VartypeList.Elements[i].OffsetInfoType.HasRelation()) {
+                        trgtDBVarDims[varName] += 
+                            " and Has Relation with relation ID: " + 
+                            ((IOffsetInfoType_Relation)pObj1.VartypeList.Elements[i].OffsetInfoType).GetRelationId();
+                    }
+                }
+
+                Dictionary<string, PObject> trgtDBVarContents = new Dictionary<string, PObject>();
+                for (int i = 0; i < 3; ++i) {
+                    string varName = pObj1.VarnameList.Names[i];
+                    if (pObj1.VartypeList.Elements[i].OffsetInfoType.HasRelation()) {
+                        trgtDBVarContents[varName] = plcConns[targetConnSessID].getTypeInfoByRelId(
+                            ((IOffsetInfoType_Relation)pObj1.VartypeList.Elements[i].OffsetInfoType).GetRelationId()
+                        ); 
+                    } else {
+                        trgtDBVarContents[varName] = new PObject();
+                    }
+                }
+
+                //DEV NOTE: This works! This is how we navigate the variable levels within the PLC
+
+                output = trgtDBVarContents;
+
+                
             } // else
-            
-        }*/
+
+            return output;
+        }
 
 
         /*public async Task<object> GetPObject_atDBInfoListIndex(dynamic input) {
