@@ -81,7 +81,7 @@ namespace S7CommPlusDriverWrapper
             return output;
         }
 
-        public async Task<object> GetTags(dynamic input) {
+        public async Task<object> ReadTags(dynamic input) {
 
             // parse input
             UInt32 targetConnSessID = (UInt32)input.sessionID2;

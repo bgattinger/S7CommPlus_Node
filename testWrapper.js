@@ -1,8 +1,8 @@
 
 const edge = require('edge-js');
 const async = require('async');
-const readline = require('readline');
-const { error } = require('console');
+const { interval } = require('rxjs');
+const { map, mergeMap } = require('rxjs/operators');
 
 let plcConns = new Map();
 
@@ -17,7 +17,7 @@ const Connect = (ipAddress, password, timeout) => {
     return new Promise((resolve, reject) => {
 
         // init input object
-        input = {
+       let input = {
             ipAddress: ipAddress,
             password: password,
             timeout: timeout
@@ -112,7 +112,7 @@ const Disconnect = (ipAddress) => {
         let sessionID2 = plcConns.get(ipAddress);
 
         // init input object
-        input = {
+        let input = {
             sessionID2: sessionID2
         }
         Disconnect_(input, (error, output) => {
@@ -205,7 +205,7 @@ const GetDataBlockInfoList = (ipAddress) => {
         let sessionID2 = plcConns.get(ipAddress);
 
         // init input object
-        input = {
+        let input = {
             sessionID2: sessionID2
         }
         GetDataBlockInfoList_(input, (error, output) => {
@@ -238,12 +238,12 @@ const GetDataBlockInfoList = (ipAddress) => {
 
 
 
-var GetTags_ = edge.func({
+var ReadTags_ = edge.func({
     assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
     typeName: 'S7CommPlusDriverWrapper.DriverManager',
-    methodName: 'GetTags'
+    methodName: 'ReadTags'
 });
-const GetTags = (ipAddress, tagSymbolList) => {
+const ReadTags = (ipAddress, tagSymbols) => {
     return new Promise((resolve,reject) => {
 
         // check for IP
@@ -257,11 +257,11 @@ const GetTags = (ipAddress, tagSymbolList) => {
         let sessionID2 = plcConns.get(ipAddress);
 
         // init input object
-        input = {
+        let input = {
             sessionID2: sessionID2,
-            tagSymbols: tagSymbolList
+            tagSymbols: tagSymbols
         }
-        GetTags_(input, (error, output) => {
+        ReadTags_(input, (error, output) => {
             if (error) {
                 reject(error);
                 return;
@@ -287,6 +287,13 @@ const GetTags = (ipAddress, tagSymbolList) => {
             });
         });
     });
+}
+const PollPLCTags = (callback, ipAddress, tagSymbols, interval = 1000) => {
+    const tagValueStream$ = interval(interval).pipe(
+        mergeMap(() => ReadTags(ipAddress,tagSymbols))
+    );
+
+    return tagValueStream$.subscribe(callback);
 }
 
 
