@@ -1,7 +1,7 @@
 
 const edge = require('edge-js');
 const async = require('async');
-const { interval } = require('rxjs');
+const { interval, from } = require('rxjs');
 const { map, mergeMap } = require('rxjs/operators');
 
 let plcConns = new Map();
@@ -283,17 +283,33 @@ const ReadTags = (ipAddress, tagSymbols) => {
     
             resolve({
                 ipAddress: ipAddress,
-                readTags: JSON.stringify(readTags, null, 2)
+                readTags: readTags
             });
         });
     });
 }
-const PollPLCTags = (callback, ipAddress, tagSymbols, interval = 1000) => {
+const PollTags = (ipAddress, tagSymbols, interval = 1000) => {
+     // create subject to emit revieved tag values
+    const tagValsSubject = new Subject();
+
+    // create data stream and read tag values into it
     const tagValueStream$ = interval(interval).pipe(
-        mergeMap(() => ReadTags(ipAddress,tagSymbols))
+        mergeMap(() => {
+            return from(ReadTags(ipAddress, tagSymbols));
+        })
     );
 
-    return tagValueStream$.subscribe(callback);
+    // subscribe to data stream and re-emit recieved tag values via subject
+    tagValueStream$.subscribe({
+        next: (tagValues) => {
+            tagValsSubject.next(tagValues);
+        },
+        error: (err) => {
+            throw new Error("Polling failed"+err.message);
+        }
+    });
+
+    return tagValsSubject;
 }
 
 
@@ -336,7 +352,8 @@ const GetDataBlockContent = (ipAddress, dataBlockName) => {
 
 async function main() {
 
-    targetPlcIP = "192.168.18.26";
+    testPlcIP1 = "192.168.18.25";
+    testPlcIP2 = "192.168.18.26";
     targetPlcIPs_connect = [
         {
             ipAddress: "192.168.18.25",
@@ -366,11 +383,21 @@ async function main() {
         console.log(result);
         console.log("\n====================================\n");
 
-        /*console.log("\n=== Testing Connect ===\n");
-        console.log("Connecting to PLC @ IP: " + targetPlcIP)
-        result = await Connect(targetPlcIP, "", 5000);
-        console.log("successful connection to PLC @ IP: " + result.ipAddress + " (SessionID: " + result.sessID2 + ")");
-        console.log("\n====================================\n");*/
+        console.log("\n=== Testing Get Tags ===\n");
+        const tagSymbols1 = ["Test.bool", "Test.Int", "Test.Dint", "Test.Real, Test.Lreal"];
+        result = await ReadTags(testPlcIP2, tagSymbols1);
+        console.log("successfully retrieved Tag values from PLC @ IP: " + result.ipAddress);
+        console.log("Read Tag values:");
+        result.readTags.forEach(tag => {
+            console.log(`Tag Name: ${tag.Name}`);
+            console.log(`Tag Value: ${tag.Value}`);
+            console.log(`Tag DataType: ${tag.Datatype}`);
+            console.log("-----------");
+        })
+        console.log("\n====================================\n");
+
+        //console.log("\n=== Testing Tag Polling===\n");
+        //const tagSymbols2 = ["Test.bool", "Test.Int", "Test.Dint", "Test.Real, Test.Lreal"]; 
 
         //await new Promise(resolve => setTimeout(resolve, 5000));
 
@@ -380,12 +407,7 @@ async function main() {
         console.log("Datablock Information List: \n" + result.dbInfoList);
         console.log("\n====================================\n")
 
-        console.log("\n=== Testing GetTags ===\n");
-        const tagSymbols = ["Test.Start", "Test.Value1", "Test.Value2"];
-        result = await GetTags(targetPlcIP, tagSymbols);
-        console.log("successfully retrieved Tag values from PLC @ IP: " + result.ipAddress);
-        console.log("Read Tag values: \n" + result.readTags);
-        console.log("\n====================================\n");*/
+        
 
         /*
         //DEV NOTE: This works and will be very important later, but right now its output is huge and
@@ -406,11 +428,7 @@ async function main() {
         console.log(result); 
         console.log("\n====================================\n");
 
-        /*console.log("\n=== Testing Disconnect ===\n");
-        console.log("Disconnecting from PLC @ IP : " + targetPlcIP);
-        result = await Disconnect(targetPlcIP); 
-        console.log("successful disconnect from PLC @ IP: " + result.ipAddress + " (SessionID: " + result.sessID2 + ")");
-        console.log("\n====================================\n");*/
+        
         
     } catch (error) {
         console.log("Error:\n >>>", error.message);
@@ -423,13 +441,23 @@ main();
 
 
 
-
+/*console.log("\n=== Testing Connect ===\n");
+        console.log("Connecting to PLC @ IP: " + targetPlcIP)
+        result = await Connect(targetPlcIP, "", 5000);
+        console.log("successful connection to PLC @ IP: " + result.ipAddress + " (SessionID: " + result.sessID2 + ")");
+        console.log("\n====================================\n");*/
 
 
 /*
 
+/*console.log("\n=== Testing Disconnect ===\n");
+        console.log("Disconnecting from PLC @ IP : " + targetPlcIP);
+        result = await Disconnect(targetPlcIP); 
+        console.log("successful disconnect from PLC @ IP: " + result.ipAddress + " (SessionID: " + result.sessID2 + ")");
+        console.log("\n====================================\n");*/
 
-function isValidIPv4(ip) {
+
+/*function isValidIPv4(ip) {
     const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     return ipv4Regex.test(ip);
 }
