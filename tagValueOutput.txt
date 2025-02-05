@@ -1,106 +1,92 @@
-{
-  "ipAddress": "192.168.18.26",
-  "readTags": [
-    {
-      "Name": "Test.bool",
-      "Address": {
-        "SymbolCrc": 0,
-        "AccessArea": 2316173313,
-        "AccessSubArea": 2550,
-        "LID": [
-          9
-        ]
-      },
-      "Quality": 192,
-      "Datatype": 1,
-      "LastReadError": "0",
-      "LastWriteError": "0",
-      "Value": false
-    },
-    {
-      "Name": "Test.Int",
-      "Address": {
-        "SymbolCrc": 0,
-        "AccessArea": 2316173313,
-        "AccessSubArea": 2550,
-        "LID": [
-          17
-        ]
-      },
-      "Quality": 192,
-      "Datatype": 5,
-      "LastReadError": "0",
-      "LastWriteError": "0",
-      "Value": 10710
-    },
-    {
-      "Name": "Test.Dint",
-      "Address": {
-        "SymbolCrc": 0,
-        "AccessArea": 2316173313,
-        "AccessSubArea": 2550,
-        "LID": [
-          18
-        ]
-      },
-      "Quality": 192,
-      "Datatype": 7,
-      "LastReadError": "0",
-      "LastWriteError": "0",
-      "Value": 14147910
-    }
-  ]
-}
-{
-  "ipAddress": "192.168.18.26",
-  "readTags": [
-    {
-      "Name": "Test.bool",
-      "Address": {
-        "SymbolCrc": 0,
-        "AccessArea": 2316173313,
-        "AccessSubArea": 2550,
-        "LID": [
-          9
-        ]
-      },
-      "Quality": 192,
-      "Datatype": 1,
-      "LastReadError": "0",
-      "LastWriteError": "0",
-      "Value": false
-    },
-    {
-      "Name": "Test.Int",
-      "Address": {
-        "SymbolCrc": 0,
-        "AccessArea": 2316173313,
-        "AccessSubArea": 2550,
-        "LID": [
-          17
-        ]
-      },
-      "Quality": 192,
-      "Datatype": 5,
-      "LastReadError": "0",
-      "LastWriteError": "0",
-      "Value": 10715
-    },
-    {
-      "Name": "Test.Dint",
-      "Address": {
-        "SymbolCrc": 0,
-        "AccessArea": 2316173313,
-        "AccessSubArea": 2550,
-        "LID": [
-          18
-        ]
-      },
-      "Quality": 192,
-      "Datatype": 7,
-      "LastReadError": "0",
-      "LastWriteError": "0",
-      "Value": 14154515
-    }
-  ]
-}
+Tag Name: Test.bool
+Tag Value: true
+Tag DataType: 1
+---
+Tag Name: Test.Int
+Tag Value: 13888
+Tag DataType: 5
+---
+Tag Name: Test.Dint
+Tag Value: 18346048
+Tag DataType: 7
+---
+Tag Name: Test.Real
+Tag Value: 2044.3135986328125
+Tag DataType: 8
+---
+Tag Name: Test.Lreal
+Tag Value: 210056
+Tag DataType: 48
+---
+
+===
+
+Tag Name: Test.bool
+Tag Value: true
+Tag DataType: 1
+---
+Tag Name: Test.Int
+Tag Value: 13893
+Tag DataType: 5
+---
+Tag Name: Test.Dint
+Tag Value: 18352653
+Tag DataType: 7
+---
+Tag Name: Test.Real
+Tag Value: 2045.0496826171875
+Tag DataType: 8
+---
+Tag Name: Test.Lreal
+Tag Value: 210131.625
+Tag DataType: 48
+---
+
+===
+
+Tag Name: Test.bool
+Tag Value: true
+Tag DataType: 1
+---
+Tag Name: Test.Int
+Tag Value: 13898
+Tag DataType: 5
+---
+Tag Name: Test.Dint
+Tag Value: 18359258
+Tag DataType: 7
+---
+Tag Name: Test.Real
+Tag Value: 2045.78564453125
+Tag DataType: 8
+---
+Tag Name: Test.Lreal
+Tag Value: 210207.25
+Tag DataType: 48
+---
+
+===
+
+Tag Name: Test.bool
+Tag Value: true
+Tag DataType: 1
+---
+Tag Name: Test.Int
+Tag Value: 13903
+Tag DataType: 5
+---
+Tag Name: Test.Dint
+Tag Value: 18365863
+Tag DataType: 7
+---
+Tag Name: Test.Real
+Tag Value: 2046.5216064453125
+Tag DataType: 8
+---
+Tag Name: Test.Lreal
+Tag Value: 210282.875
+Tag DataType: 48
+---
+
+===
+

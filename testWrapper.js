@@ -302,7 +302,7 @@ const PollTags = (ipAddress, tagSymbols, interval_t = 1000) => {
     );
 
     // subscribe to data stream and re-emit recieved tag values via subject
-    tagValueStream$.subscribe({
+    tagValsSubscription = tagValueStream$.subscribe({
         next: (tagValues) => {
             tagValsSubject.next(tagValues); //emit tag values
         },
@@ -311,7 +311,10 @@ const PollTags = (ipAddress, tagSymbols, interval_t = 1000) => {
         }
     });
 
-    return tagValsSubject;
+    return {
+        subject: tagValsSubject, 
+        subscription: tagValsSubscription
+    };
 }
 
 
@@ -390,7 +393,79 @@ async function main() {
         console.log(result);
         console.log("\n====================================\n");
 
-        /*console.log("\n=== Testing Get Tags ===\n");
+        
+
+        console.log("\n=== Testing Tag Polling ===\n");
+        console.log("Polling PLC @ IP: " + testPlcIP2 + "\n");
+        
+        //initialize clean output file
+        fs.writeFile('tagValueOutput.txt', '', (err) => {
+            if (err) { throw new Error(err.message); }
+        });
+
+        //begin polling asynchronously
+        const tagSymbols2 = ["Test.bool", "Test.Int", "Test.Dint", "Test.Real", "Test.Lreal"]; 
+        const pollRes = PollTags(
+            testPlcIP2, 
+            tagSymbols2, 
+            5000
+        );
+
+        // define handling of polled tag values
+        pollRes.subject.subscribe({
+            next: (result) => {
+
+                // build sample from recieved tag value data
+                sample = "";
+                result.readTags.forEach(tag => {
+                    sample += `Tag Name: ${tag.Name}\n`
+                    sample += `Tag Value: ${tag.Value}\n`
+                    sample += `Tag DataType: ${tag.Datatype}\n`
+                    sample += '---\n'
+                });
+
+                // write sample to output file
+                fs.appendFile('tagValueOutput.txt', sample + '\n===\n\n', (err) => {
+                    if (err) { throw new Error(err.message); }
+                });
+            },
+            error: (err) => {
+                throw new Error(err.message);
+            }
+        })
+
+        // Listen for user input to stop the polling 
+        // (stop main program execution here, polling should still be executing asynchronously while main program waits for user input)
+        rl.question('Enter "stop" to stop polling: ', async (answer) => {
+            if (answer.toLowerCase() === 'stop') {
+                // Unsubscribe from the data stream
+                pollRes.subscription.unsubscribe();
+                pollRes.subject.unsubscribe();
+                console.log("Polling stopped.");
+
+                console.log("\n=== Testing Multiple PLC Disconnecting ===\n");
+                console.log("Disconnecting from PLC's @ IPs: \n");
+                for (let i = 0; i < targetPlcIPs_disconnect.length; i++) {
+                    console.log(i + ". " + targetPlcIPs_disconnect[i] + "\n");
+                }
+                result = await MultiDisconnect(targetPlcIPs_disconnect);
+                console.log(result); 
+                console.log("\n====================================\n");
+
+                rl.close();  // Close the readline interface
+            } else {
+                console.log('Invalid command. Please enter "stop" to stop.');
+                rl.close();  // Close the readline interface
+            }
+        });
+
+    } catch (error) {
+        console.log("Error:\n >>>", error.message);
+    }
+}
+main();
+
+/*console.log("\n=== Testing Get Tags ===\n");
         const tagSymbols1 = ["Test.bool", "Test.Int", "Test.Dint", "Test.Real, Test.Lreal"];
         result = await ReadTags(testPlcIP2, tagSymbols1);
         console.log("successfully retrieved Tag values from PLC @ IP: " + result.ipAddress);
@@ -403,53 +478,7 @@ async function main() {
         })
         console.log("\n====================================\n");*/
 
-        console.log("\n=== Testing Tag Polling ===\n");
-        console.log("Polling PLC @ IP: " + testPlcIP2 + "\n");
-        const tagSymbols2 = ["Test.bool", "Test.Int", "Test.Dint", "Test.Real, Test.Lreal"]; 
-        const tagValueStream$ = PollTags(testPlcIP2, tagSymbols2, 5000);
-        tagValueStream$.subscribe({
-            next: (tagVals) => {
-                fs.appendFile(
-                    'tagValueOutput.txt', JSON.stringify(tagVals, null, 2) + '\n', (err) => {
-                        if (err) {
-                            throw new Error(err.message);
-                        }
-                    }
-                )
-            },
-            error: (err) => {
-                throw new Error(err.message);
-            }
-        })
-
-        // Listen for user input to stop the polling
-        rl.question('Enter "stop" to stop polling: ', async (answer) => {
-            if (answer.toLowerCase() === 'stop') {
-                // Unsubscribe from the data stream
-                tagValueStream$.unsubscribe();
-                console.log("Polling stopped.");
-
-
-                console.log("\n=== Testing Multiple PLC Disconnecting ===\n");
-                console.log("Disconnecting from PLC's @ IPs: \n");
-                for (let i = 0; i < targetPlcIPs_disconnect.length; i++) {
-                    console.log(i + ". " + targetPlcIPs_disconnect[i] + "\n");
-                }
-                result = await MultiDisconnect(targetPlcIPs_disconnect);
-                console.log(result); 
-                console.log("\n====================================\n");
-                
-
-                rl.close();  // Close the readline interface
-            } else {
-                console.log('Invalid command. Please enter "stop" to stop.');
-                rl.close();  // Close the readline interface
-            }
-        });
-
-
-
-        //await new Promise(resolve => setTimeout(resolve, 5000));
+//await new Promise(resolve => setTimeout(resolve, 5000));
 
         /*console.log("\n=== Testing GetDataBlockInfoList ===\n");
         result = await GetDataBlockInfoList(targetPlcIP);
@@ -468,20 +497,6 @@ async function main() {
         console.log("successfully retrieved datablock: " + dataBlockName + "\n\tfrom PLC @ IP: " + targetPlcIP);
         console.log("Datablock Content: \n" + result);
         console.log("\n====================================\n");*/
-
-        
-
-        
-        
-    } catch (error) {
-        console.log("Error:\n >>>", error.message);
-    }
-}
-main();
-
-
-
-
 
 
 /*console.log("\n=== Testing Connect ===\n");
