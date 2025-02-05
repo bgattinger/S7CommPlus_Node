@@ -1,8 +1,10 @@
 
 const edge = require('edge-js');
 const async = require('async');
-const { interval, from } = require('rxjs');
+const { interval, from, Subject } = require('rxjs');
 const { map, mergeMap } = require('rxjs/operators');
+const readline = require('readline');
+const fs = require('fs');
 
 let plcConns = new Map();
 
@@ -288,12 +290,12 @@ const ReadTags = (ipAddress, tagSymbols) => {
         });
     });
 }
-const PollTags = (ipAddress, tagSymbols, interval = 1000) => {
+const PollTags = (ipAddress, tagSymbols, interval_t = 1000) => {
      // create subject to emit revieved tag values
     const tagValsSubject = new Subject();
 
     // create data stream and read tag values into it
-    const tagValueStream$ = interval(interval).pipe(
+    const tagValueStream$ = interval(interval_t).pipe(
         mergeMap(() => {
             return from(ReadTags(ipAddress, tagSymbols));
         })
@@ -302,10 +304,10 @@ const PollTags = (ipAddress, tagSymbols, interval = 1000) => {
     // subscribe to data stream and re-emit recieved tag values via subject
     tagValueStream$.subscribe({
         next: (tagValues) => {
-            tagValsSubject.next(tagValues);
+            tagValsSubject.next(tagValues); //emit tag values
         },
         error: (err) => {
-            throw new Error("Polling failed"+err.message);
+            tagValsSubject.error(err); //emit error
         }
     });
 
@@ -352,6 +354,11 @@ const GetDataBlockContent = (ipAddress, dataBlockName) => {
 
 async function main() {
 
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
     testPlcIP1 = "192.168.18.25";
     testPlcIP2 = "192.168.18.26";
     targetPlcIPs_connect = [
@@ -374,7 +381,7 @@ async function main() {
     
     try {
 
-        console.log("\n=== Testing Multiple PLC Connecting===\n");
+        console.log("\n=== Testing Multiple PLC Connecting ===\n");
         console.log("Connecting to PLCs @ IPs: \n");
         for (let i = 0; i < targetPlcIPs_connect.length; i++) {
             console.log(i + ". " + JSON.stringify(targetPlcIPs_connect[i], null, 2) + "\n");
@@ -383,7 +390,7 @@ async function main() {
         console.log(result);
         console.log("\n====================================\n");
 
-        console.log("\n=== Testing Get Tags ===\n");
+        /*console.log("\n=== Testing Get Tags ===\n");
         const tagSymbols1 = ["Test.bool", "Test.Int", "Test.Dint", "Test.Real, Test.Lreal"];
         result = await ReadTags(testPlcIP2, tagSymbols1);
         console.log("successfully retrieved Tag values from PLC @ IP: " + result.ipAddress);
@@ -394,10 +401,53 @@ async function main() {
             console.log(`Tag DataType: ${tag.Datatype}`);
             console.log("-----------");
         })
-        console.log("\n====================================\n");
+        console.log("\n====================================\n");*/
 
-        //console.log("\n=== Testing Tag Polling===\n");
-        //const tagSymbols2 = ["Test.bool", "Test.Int", "Test.Dint", "Test.Real, Test.Lreal"]; 
+        console.log("\n=== Testing Tag Polling ===\n");
+        console.log("Polling PLC @ IP: " + testPlcIP2 + "\n");
+        const tagSymbols2 = ["Test.bool", "Test.Int", "Test.Dint", "Test.Real, Test.Lreal"]; 
+        const tagValueStream$ = PollTags(testPlcIP2, tagSymbols2, 5000);
+        tagValueStream$.subscribe({
+            next: (tagVals) => {
+                fs.appendFile(
+                    'tagValueOutput.txt', JSON.stringify(tagVals, null, 2) + '\n', (err) => {
+                        if (err) {
+                            throw new Error(err.message);
+                        }
+                    }
+                )
+            },
+            error: (err) => {
+                throw new Error(err.message);
+            }
+        })
+
+        // Listen for user input to stop the polling
+        rl.question('Enter "stop" to stop polling: ', async (answer) => {
+            if (answer.toLowerCase() === 'stop') {
+                // Unsubscribe from the data stream
+                tagValueStream$.unsubscribe();
+                console.log("Polling stopped.");
+
+
+                console.log("\n=== Testing Multiple PLC Disconnecting ===\n");
+                console.log("Disconnecting from PLC's @ IPs: \n");
+                for (let i = 0; i < targetPlcIPs_disconnect.length; i++) {
+                    console.log(i + ". " + targetPlcIPs_disconnect[i] + "\n");
+                }
+                result = await MultiDisconnect(targetPlcIPs_disconnect);
+                console.log(result); 
+                console.log("\n====================================\n");
+                
+
+                rl.close();  // Close the readline interface
+            } else {
+                console.log('Invalid command. Please enter "stop" to stop.');
+                rl.close();  // Close the readline interface
+            }
+        });
+
+
 
         //await new Promise(resolve => setTimeout(resolve, 5000));
 
@@ -419,14 +469,7 @@ async function main() {
         console.log("Datablock Content: \n" + result);
         console.log("\n====================================\n");*/
 
-        console.log("\n=== Testing Multiple PLC Disconnecting===\n");
-        console.log("Disconnecting from PLC's @ IPs: \n");
-        for (let i = 0; i < targetPlcIPs_disconnect.length; i++) {
-            console.log(i + ". " + targetPlcIPs_disconnect[i] + "\n");
-        }
-        result = await MultiDisconnect(targetPlcIPs_disconnect);
-        console.log(result); 
-        console.log("\n====================================\n");
+        
 
         
         

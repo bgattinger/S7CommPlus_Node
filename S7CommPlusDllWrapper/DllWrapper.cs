@@ -29,7 +29,10 @@ namespace S7CommPlusDriverWrapper
             int timeout = (int)input.timeout;
 
             // init output object (initialize to unsuccseful connection values)
-            var output = (connRes: (int)-1, sessionID2: (UInt32)0);
+            var output = (
+                connRes: (int)-1, 
+                sessionID2: (UInt32)0
+            );
 
             S7CommPlusConnection conn = new S7CommPlusConnection();
             output.connRes = await Task.Run(() => conn.Connect(ipAddress, password, timeout));
@@ -66,10 +69,9 @@ namespace S7CommPlusDriverWrapper
             UInt32 targetConnSessID = (UInt32)input.sessionID2;
 
             // init output object (initialize to unsuccseful read values)
-            List<S7CommPlusConnection.DatablockInfo> dbInfoList = null;
             var output = (
                 accessRes: (int)-1, 
-                dbInfoList: dbInfoList 
+                dbInfoList: new List<S7CommPlusConnection.DatablockInfo>()
             );
 
             if (plcConns.ContainsKey(targetConnSessID)) {
@@ -88,10 +90,9 @@ namespace S7CommPlusDriverWrapper
             string[] tagSymbols = ((IEnumerable<object>)input.tagSymbols).Cast<string>().ToArray();
 
             // init output object (initialize to unsuccseful read values)
-            List<PlcTag> readTags = new List<PlcTag>();
             var output = (
                 accessRes: (int)-1, 
-                readTags: readTags
+                readTags: new List<PlcTag>()
             );
 
             PlcTags tagsToRead = new PlcTags();
@@ -103,17 +104,13 @@ namespace S7CommPlusDriverWrapper
                     PlcTag tag = plcConns[targetConnSessID].getPlcTagBySymbol(tagSymbol);
                     
                     if (tag != null) {
-                        readTags.Add(tag);
-                        tagsToRead.AddTag(readTags[readTags.Count()-1]);
+                        output.readTags.Add(tag);
+                        tagsToRead.AddTag(output.readTags[output.readTags.Count()-1]);
                     }   
                 }
 
                 // read tag values into PLC tag objects
                 output.accessRes = await Task.Run(() => tagsToRead.ReadTags(plcConns[targetConnSessID]));
-                if (output.accessRes == 0) {
-                    output.readTags = readTags;
-                } 
-
             }
 
             // return tag objects populated with read values
