@@ -2,6 +2,7 @@
 const edge = require('edge-js');
 const async = require('async');
 const readline = require('readline');
+const { error } = require('console');
 
 let plcConns = new Map();
 
@@ -54,24 +55,23 @@ const MultiConnect = (connParamArray) => {
     return new Promise((resolve, reject) => {
 
         let connResults = [];
-        async.each(connParamArray, async function (connParam, callback) {
-            try {
-                // attempt connection
-                const connRes = await Connect(
-                    connParam.ipAddress,
-                    connParam.password,
-                    connParam.timeout
-                )
+        async.each(connParamArray, function (connParam, callback) {
+            // attempt connection
+            Connect(
+                connParam.ipAddress,
+                connParam.password,
+                connParam.timeout
+            ).then( connRes => {
                 // store successful connection result
                 connResults.push({
                     status: "Success",
-                    IP: connRes.ipAddresss,
+                    IP: connRes.ipAddress,
                     SessID: connRes.sessID2
                 });
                 // proceed to next connection attempt
                 callback();
-            } catch (error) {
-                // store unsuccessful connection result
+            }).catch( error => {
+                // Store unsuccessful connection result
                 connResults.push({
                     status: "Failure",
                     IP: connParam.ipAddress,
@@ -80,12 +80,10 @@ const MultiConnect = (connParamArray) => {
                 });
                 // proceed to next connection attempt
                 callback();
-            }
+            });
         }, function (err) {
             if (err) {
-                reject(new Error(
-                    "An Error has occured while attempting to connect to PLCs"
-                ));
+                reject(new Error(err.message));
                 return;
             } 
             resolve(connResults);
@@ -152,10 +150,11 @@ const MultiDisconnect = (ipArray) => {
     return new Promise((resolve, reject) => {
 
         let disConnResults = []
-        async.each(ipArray, async function(ipAddress, callback) {
-            try {
-                // attempt disconnect 
-                const disConnRes = await Disconnect(ipAddress);
+        async.each(ipArray, function(ipAddress, callback) {
+            // attempt disconnect 
+            Disconnect(
+                ipAddress
+            ).then (disConnRes => {
                 // store successful disconnect result
                 disConnResults.push({
                     status: "Success",
@@ -164,7 +163,7 @@ const MultiDisconnect = (ipArray) => {
                 });
                 // proceed to next disconnect attempt
                 callback();
-            } catch (error) {
+            }).catch ( error => {
                 // store unsuccessful disconnect attempt
                 disConnResults.push({
                     status: "Success",
@@ -174,12 +173,10 @@ const MultiDisconnect = (ipArray) => {
                 });
                 // proceed to next disconnect attempt
                 callback();
-            }
+            });
         }, function (err) {
             if (err) {
-                reject(new Error(
-                    "An Error has occured while attempting to disconnect from PLCs"
-                ));
+                reject(new Error(err.message));
                 return;
             }
             resolve(disConnResults);
@@ -332,42 +329,82 @@ const GetDataBlockContent = (ipAddress, dataBlockName) => {
 
 async function main() {
 
-    targetPlcIP = "192.168.18.25"
+    targetPlcIP = "192.168.18.26";
+    targetPlcIPs_connect = [
+        {
+            ipAddress: "192.168.18.25",
+            password: "",
+            timeout: 5000
+        }, 
+        {
+            ipAddress: "192.168.18.26",
+            password: "",
+            timeout: 5000
+        }
+    ];
+    targetPlcIPs_disconnect = [
+        "192.168.18.25",
+        "192.168.18.26"
+    ]
+
     
     try {
-        console.log("\n=== Testing Connect ===\n");
+
+        console.log("\n=== Testing Multiple PLC Connecting===\n");
+        console.log("Connecting to PLCs @ IPs: \n");
+        for (let i = 0; i < targetPlcIPs_connect.length; i++) {
+            console.log(i + ". " + JSON.stringify(targetPlcIPs_connect[i], null, 2) + "\n");
+        }
+        result = await MultiConnect(targetPlcIPs_connect)
+        console.log(result);
+        console.log("\n====================================\n");
+
+        /*console.log("\n=== Testing Connect ===\n");
         console.log("Connecting to PLC @ IP: " + targetPlcIP)
         result = await Connect(targetPlcIP, "", 5000);
         console.log("successful connection to PLC @ IP: " + result.ipAddress + " (SessionID: " + result.sessID2 + ")");
-        console.log("\n====================================\n");
+        console.log("\n====================================\n");*/
+
+        //await new Promise(resolve => setTimeout(resolve, 5000));
 
         /*console.log("\n=== Testing GetDataBlockInfoList ===\n");
         result = await GetDataBlockInfoList(targetPlcIP);
         console.log("successfully retrieved Datablock Information List from PLC @ IP: " + result.ipAddress);
         console.log("Datablock Information List: \n" + result.dbInfoList);
-        console.log("\n====================================\n");
+        console.log("\n====================================\n")
 
         console.log("\n=== Testing GetTags ===\n");
-        const tagSymbols = ["Data.Int", "Data.Dint", "Data.Real"];
+        const tagSymbols = ["Test.Start", "Test.Value1", "Test.Value2"];
         result = await GetTags(targetPlcIP, tagSymbols);
         console.log("successfully retrieved Tag values from PLC @ IP: " + result.ipAddress);
         console.log("Read Tag values: \n" + result.readTags);
         console.log("\n====================================\n");*/
 
+        /*
+        //DEV NOTE: This works and will be very important later, but right now its output is huge and
+        //overflows terminal
         console.log("\n=== Testing GetDataBlockContent ===\n");
         const dataBlockName = "GlobalData";
         result = await GetDataBlockContent(targetPlcIP, dataBlockName);
         console.log("successfully retrieved datablock: " + dataBlockName + "\n\tfrom PLC @ IP: " + targetPlcIP);
         console.log("Datablock Content: \n" + result);
+        console.log("\n====================================\n");*/
+
+        console.log("\n=== Testing Multiple PLC Disconnecting===\n");
+        console.log("Disconnecting from PLC's @ IPs: \n");
+        for (let i = 0; i < targetPlcIPs_disconnect.length; i++) {
+            console.log(i + ". " + targetPlcIPs_disconnect[i] + "\n");
+        }
+        result = await MultiDisconnect(targetPlcIPs_disconnect);
+        console.log(result); 
         console.log("\n====================================\n");
 
-        console.log("\n=== Testing Disconnect ===\n");
+        /*console.log("\n=== Testing Disconnect ===\n");
         console.log("Disconnecting from PLC @ IP : " + targetPlcIP);
         result = await Disconnect(targetPlcIP); 
         console.log("successful disconnect from PLC @ IP: " + result.ipAddress + " (SessionID: " + result.sessID2 + ")");
+        console.log("\n====================================\n");*/
         
-        console.log("\n====================================\n");
-
     } catch (error) {
         console.log("Error:\n >>>", error.message);
     }
