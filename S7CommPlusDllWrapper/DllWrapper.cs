@@ -8,7 +8,7 @@ using System.Security;
 using System.Threading.Tasks;
 using S7CommPlusDriver;
 using S7CommPlusDriver.ClientApi;
-
+using System.Windows.Forms;
 
 //Note: all function return values are boxed in a Task<object> before being returned
 // The values are then unboxed on the javascript side
