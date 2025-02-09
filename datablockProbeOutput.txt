@@ -1,0 +1,1748 @@
+[
+  "Target DataBlock ID: 2449473537",
+  "===================",
+  [
+    " <var = bool> ",
+    " <datatype = primitive> "
+  ],
+  [
+    " <var = Int> ",
+    " <datatype = primitive> "
+  ],
+  [
+    " <var = Dint> ",
+    " <datatype = primitive> "
+  ],
+  [
+    " <var = Real> ",
+    " <datatype = primitive> "
+  ],
+  [
+    " <var = Lreal> ",
+    " <datatype = primitive> "
+  ],
+  [
+    " <var = Mytype> ",
+    " <datatype = struct/type> ",
+    [
+      [
+        " <var = bool> ",
+        " <datatype = primitive> "
+      ],
+      [
+        " <var = real> ",
+        " <datatype = primitive> "
+      ],
+      [
+        " <var = int> ",
+        " <datatype = primitive> "
+      ],
+      [
+        " <var = struct> ",
+        " <datatype = struct/type> ",
+        [
+          [
+            " <var = bool> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = real> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = int> ",
+            " <datatype = primitive> "
+          ]
+        ]
+      ],
+      [
+        " <var = structArray> ",
+        " <datatype = 1d_Struct/Type_Array> ",
+        [
+          {
+            "Item1": "structArray[0]",
+            "Item2": [
+              [
+                " <var = bool> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = real> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = int> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          },
+          {
+            "Item1": "structArray[1]",
+            "Item2": [
+              [
+                " <var = bool> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = real> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = int> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          },
+          {
+            "Item1": "structArray[2]",
+            "Item2": [
+              [
+                " <var = bool> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = real> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = int> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          },
+          {
+            "Item1": "structArray[3]",
+            "Item2": [
+              [
+                " <var = bool> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = real> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = int> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          },
+          {
+            "Item1": "structArray[4]",
+            "Item2": [
+              [
+                " <var = bool> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = real> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = int> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          },
+          {
+            "Item1": "structArray[5]",
+            "Item2": [
+              [
+                " <var = bool> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = real> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = int> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          }
+        ]
+      ]
+    ]
+  ],
+  [
+    " <var = MyStruct> ",
+    " <datatype = struct/type> ",
+    [
+      [
+        " <var = bools> ",
+        " <datatype = primitive> "
+      ],
+      [
+        " <var = realf> ",
+        " <datatype = primitive> "
+      ],
+      [
+        " <var = intf> ",
+        " <datatype = primitive> "
+      ]
+    ]
+  ],
+  [
+    " <var = MytypeArray> ",
+    " <datatype = 1d_Struct/Type_Array> ",
+    [
+      {
+        "Item1": "MytypeArray[0]",
+        "Item2": [
+          [
+            " <var = bool> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = real> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = int> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = struct> ",
+            " <datatype = struct/type> ",
+            [
+              [
+                " <var = bool> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = real> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = int> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          ],
+          [
+            " <var = structArray> ",
+            " <datatype = 1d_Struct/Type_Array> ",
+            [
+              {
+                "Item1": "structArray[0]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[1]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[2]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[3]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[4]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[5]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              }
+            ]
+          ]
+        ]
+      },
+      {
+        "Item1": "MytypeArray[1]",
+        "Item2": [
+          [
+            " <var = bool> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = real> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = int> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = struct> ",
+            " <datatype = struct/type> ",
+            [
+              [
+                " <var = bool> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = real> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = int> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          ],
+          [
+            " <var = structArray> ",
+            " <datatype = 1d_Struct/Type_Array> ",
+            [
+              {
+                "Item1": "structArray[0]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[1]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[2]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[3]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[4]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[5]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              }
+            ]
+          ]
+        ]
+      },
+      {
+        "Item1": "MytypeArray[2]",
+        "Item2": [
+          [
+            " <var = bool> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = real> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = int> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = struct> ",
+            " <datatype = struct/type> ",
+            [
+              [
+                " <var = bool> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = real> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = int> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          ],
+          [
+            " <var = structArray> ",
+            " <datatype = 1d_Struct/Type_Array> ",
+            [
+              {
+                "Item1": "structArray[0]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[1]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[2]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[3]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[4]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[5]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              }
+            ]
+          ]
+        ]
+      },
+      {
+        "Item1": "MytypeArray[3]",
+        "Item2": [
+          [
+            " <var = bool> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = real> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = int> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = struct> ",
+            " <datatype = struct/type> ",
+            [
+              [
+                " <var = bool> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = real> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = int> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          ],
+          [
+            " <var = structArray> ",
+            " <datatype = 1d_Struct/Type_Array> ",
+            [
+              {
+                "Item1": "structArray[0]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[1]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[2]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[3]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[4]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[5]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              }
+            ]
+          ]
+        ]
+      },
+      {
+        "Item1": "MytypeArray[4]",
+        "Item2": [
+          [
+            " <var = bool> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = real> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = int> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = struct> ",
+            " <datatype = struct/type> ",
+            [
+              [
+                " <var = bool> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = real> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = int> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          ],
+          [
+            " <var = structArray> ",
+            " <datatype = 1d_Struct/Type_Array> ",
+            [
+              {
+                "Item1": "structArray[0]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[1]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[2]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[3]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[4]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[5]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              }
+            ]
+          ]
+        ]
+      },
+      {
+        "Item1": "MytypeArray[5]",
+        "Item2": [
+          [
+            " <var = bool> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = real> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = int> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = struct> ",
+            " <datatype = struct/type> ",
+            [
+              [
+                " <var = bool> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = real> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = int> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          ],
+          [
+            " <var = structArray> ",
+            " <datatype = 1d_Struct/Type_Array> ",
+            [
+              {
+                "Item1": "structArray[0]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[1]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[2]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[3]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[4]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[5]",
+                "Item2": [
+                  [
+                    " <var = bool> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = real> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = int> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              }
+            ]
+          ]
+        ]
+      }
+    ]
+  ],
+  [
+    " <var = MyStructArray> ",
+    " <datatype = 1d_Struct/Type_Array> ",
+    [
+      {
+        "Item1": "MyStructArray[0]",
+        "Item2": [
+          [
+            " <var = bool> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = real> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = int> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = structArray> ",
+            " <datatype = 1d_Struct/Type_Array> ",
+            [
+              {
+                "Item1": "structArray[0]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[1]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[2]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[3]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[4]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[5]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              }
+            ]
+          ],
+          [
+            " <var = struct> ",
+            " <datatype = struct/type> ",
+            [
+              [
+                " <var = 1> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = 2> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          ]
+        ]
+      },
+      {
+        "Item1": "MyStructArray[1]",
+        "Item2": [
+          [
+            " <var = bool> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = real> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = int> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = structArray> ",
+            " <datatype = 1d_Struct/Type_Array> ",
+            [
+              {
+                "Item1": "structArray[0]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[1]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[2]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[3]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[4]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[5]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              }
+            ]
+          ],
+          [
+            " <var = struct> ",
+            " <datatype = struct/type> ",
+            [
+              [
+                " <var = 1> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = 2> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          ]
+        ]
+      },
+      {
+        "Item1": "MyStructArray[2]",
+        "Item2": [
+          [
+            " <var = bool> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = real> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = int> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = structArray> ",
+            " <datatype = 1d_Struct/Type_Array> ",
+            [
+              {
+                "Item1": "structArray[0]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[1]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[2]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[3]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[4]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[5]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              }
+            ]
+          ],
+          [
+            " <var = struct> ",
+            " <datatype = struct/type> ",
+            [
+              [
+                " <var = 1> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = 2> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          ]
+        ]
+      },
+      {
+        "Item1": "MyStructArray[3]",
+        "Item2": [
+          [
+            " <var = bool> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = real> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = int> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = structArray> ",
+            " <datatype = 1d_Struct/Type_Array> ",
+            [
+              {
+                "Item1": "structArray[0]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[1]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[2]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[3]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[4]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[5]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              }
+            ]
+          ],
+          [
+            " <var = struct> ",
+            " <datatype = struct/type> ",
+            [
+              [
+                " <var = 1> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = 2> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          ]
+        ]
+      },
+      {
+        "Item1": "MyStructArray[4]",
+        "Item2": [
+          [
+            " <var = bool> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = real> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = int> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = structArray> ",
+            " <datatype = 1d_Struct/Type_Array> ",
+            [
+              {
+                "Item1": "structArray[0]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[1]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[2]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[3]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[4]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[5]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              }
+            ]
+          ],
+          [
+            " <var = struct> ",
+            " <datatype = struct/type> ",
+            [
+              [
+                " <var = 1> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = 2> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          ]
+        ]
+      },
+      {
+        "Item1": "MyStructArray[5]",
+        "Item2": [
+          [
+            " <var = bool> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = real> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = int> ",
+            " <datatype = primitive> "
+          ],
+          [
+            " <var = structArray> ",
+            " <datatype = 1d_Struct/Type_Array> ",
+            [
+              {
+                "Item1": "structArray[0]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[1]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[2]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[3]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[4]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              },
+              {
+                "Item1": "structArray[5]",
+                "Item2": [
+                  [
+                    " <var = a> ",
+                    " <datatype = primitive> "
+                  ],
+                  [
+                    " <var = b> ",
+                    " <datatype = primitive> "
+                  ]
+                ]
+              }
+            ]
+          ],
+          [
+            " <var = struct> ",
+            " <datatype = struct/type> ",
+            [
+              [
+                " <var = 1> ",
+                " <datatype = primitive> "
+              ],
+              [
+                " <var = 2> ",
+                " <datatype = primitive> "
+              ]
+            ]
+          ]
+        ]
+      }
+    ]
+  ],
+  {},
+  "==================="
+]

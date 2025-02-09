@@ -8,13 +8,14 @@ using System.Security;
 using System.Threading.Tasks;
 using S7CommPlusDriver;
 using S7CommPlusDriver.ClientApi;
-using System.Windows.Forms;
+//using System.Windows.Forms;
 
 //Note: all function return values are boxed in a Task<object> before being returned
 // The values are then unboxed on the javascript side
 
 namespace S7CommPlusDriverWrapper
 {
+
     public class DriverManager
     {
         //private static S7CommPlusConnection conn = null;
@@ -117,116 +118,424 @@ namespace S7CommPlusDriverWrapper
             return output;
         }
 
-        public async Task<object> GetDataBlockContent(dynamic input) {
+        public async Task<object> GetPlcTagSymbols(dynamic input) {
+
+            // parse input
+            UInt32 targetConnSessID = (UInt32)input.sessionID2;
+
+            // init output object
+            var output = (
+                dbInfoListAccesRes: (int)-1,
+                tagSymbols: new List<string>()
+            ); 
+
+            // check if PLC connection exists
+            if (!plcConns.ContainsKey(targetConnSessID)) {
+                return output;
+            }
+
+            // access PLC datablock information list
+            List<S7CommPlusConnection.DatablockInfo> dbInfoList = null;
+            output.dbInfoListAccesRes = plcConns[targetConnSessID].GetListOfDatablocks(out dbInfoList);
+            if (output.dbInfoListAccesRes != 0 ) {
+                return output;
+            }
+
+            async Task<List<string>> GetTagSymbols(uint parentRELID, string parentSymbol) {
+                List<string> result = new List<string>();
+
+                PObject pObj = plcConns[targetConnSessID].getTypeInfoByRelId(parentRELID);
+                for (int i = 0; i < pObj.VarnameList.Names.Count; ++i) {
+
+                    if (pObj.VartypeList.Elements[i].OffsetInfoType.Is1Dim()) 
+                    {
+                        
+
+                        if (pObj.VartypeList.Elements[i].OffsetInfoType.HasRelation()) 
+                        {
+                            // recurse over 1d array of structs (do asynchronously)
+                            List<Task> tasks = new List<Task>();
+                            
+                        } 
+                        else 
+                        {
+                            // get 1d array of tag symbols
+                            var d1arr = (IOffsetInfoType_1Dim)pObj.VartypeList.Elements[i].OffsetInfoType;
+                            uint d1arrCount = d1arr.GetArrayElementCount();
+                            int d1arrLowerBound = d1arr.GetArrayLowerBounds();
+                            for (int j = 0 ; j < d1arrCount; ++j) {
+                                result.Add(parentSymbol + "." + pObj.VarnameList.Names[i] + "[" + (j + d1arrLowerBound) + "]" );
+                            }
+                        }
+                    } 
+                    else if (pObj.VartypeList.Elements[i].OffsetInfoType.IsMDim()) 
+                    {
+                        if (pObj.VartypeList.Elements[i].OffsetInfoType.HasRelation()) 
+                        {
+                            // recurse over md array of structs (do asynchronously)
+                        } 
+                        else 
+                        {
+                            // get md array of tag symbols
+                            var dMarr = (IOffsetInfoType_MDim)pObj.VartypeList.Elements[i].OffsetInfoType;
+                            uint[] dMarrDims = dMarr.GetMdimArrayElementCount();
+                            int dMarrRank = dMarrDims.Aggregate(0, (acc, act) => acc += (act > 0) ? 1 : 0);
+                            uint dMarrCount = dMarrDims.Aggregate(1u, (acc, act) => acc * (act > 0 ? (uint)act : 1u));
+                            int[] dMarrLowerBounds = dMarr.GetMdimArrayLowerBounds();
+                            uint[] indices = new uint[dMarrRank];
+                            for(uint flatIndex = 0; flatIndex < dMarrCount; flatIndex++) {
+                                for (int dim = dMarrRank; dim >=0; dim--) {
+                                    indices[dim] = flatIndex % dMarrDims[dim];
+                                    flatIndex /= dMarrCount;
+                                }
+                                result.Add(parentSymbol + "." + pObj.VarnameList.Names[i] + "[" + string.Join(",", indices) + "]");
+                            }
+                        }
+                    }
+                    else {
+                        if (pObj.VartypeList.Elements[i].OffsetInfoType.HasRelation()) 
+                        {
+                            // recurse on struct (can do this asynchronously?)
+                            result.AddRange( await Task.Run(() => 
+                                GetTagSymbols(pObj.RelationId,pObj.VarnameList.Names[i])
+                            ));
+                        }
+                        else 
+                        {
+                            // get single tag symbol
+                            result.Add(parentSymbol + "." + pObj.VarnameList.Names[i]);
+                        }
+                    }
+                }
+
+                return result;
+            }   
+
+            foreach (S7CommPlusConnection.DatablockInfo dbInfo in dbInfoList) {
+                //Start Recursion here
+            }
+
+            return output;
+        }
+
+
+
+
+
+
+
+
+
+
+
+        public List<object> recurse_probeDB(
+            UInt32 targetConnSessID,
+            string varName, 
+            S7CommPlusDriver.PVartypeListElement varType 
+            ) 
+        {
+                List<object> output = new List<object>();
+                S7CommPlusConnection conn = plcConns[targetConnSessID];
+
+                output.Add(" <var = " + varName + "> ");
+
+                if (varType.OffsetInfoType.Is1Dim()) 
+                {
+                    // is 1d array
+                    if (varType.OffsetInfoType.HasRelation()) {
+                        output.Add(" <datatype = 1d_Struct/Type_Array> ");
+                        
+                        // get variable names and types of each element
+                        PObject pObj = plcConns[targetConnSessID].getTypeInfoByRelId(
+                            ((IOffsetInfoType_Relation)varType.OffsetInfoType).GetRelationId()
+                        );
+                        List<string> elementVarNames = pObj.VarnameList.Names;
+                        List<S7CommPlusDriver.PVartypeListElement> elementVarTypes = pObj.VartypeList.Elements;
+
+                        // recurse over 1d array
+                        List<object> arrayContent = new List<object>(); 
+                        var d1arr = (IOffsetInfoType_1Dim)varType.OffsetInfoType;
+                        uint d1arrCount = d1arr.GetArrayElementCount();
+                        int d1arrLowerBound = d1arr.GetArrayLowerBounds();
+                        for (int i = 0; i < d1arrCount; i++) {
+                            
+                            var element = (
+                                elementName: varName + "[" + i + "]",
+                                elementContent: new List<object>()
+                            );
+
+                            for (int j = 0; j < elementVarNames.Count; j++) {
+                                string elemVarName = elementVarNames[j];
+                                S7CommPlusDriver.PVartypeListElement elemVarType = elementVarTypes[j];
+                                element.elementContent.Add(
+                                    recurse_probeDB(
+                                        targetConnSessID,
+                                        elemVarName,
+                                        elemVarType
+                                    )   
+                                );
+                            }
+
+                            arrayContent.Add(element);
+                        }
+                        output.Add(arrayContent);
+
+                    } else {
+                        output.Add(" <datatype = 1d_Primitive_Array> ");
+
+                        // iterate over 1d array
+                        List<string> arrayContent = new List<string>();
+                        var d1arr = (IOffsetInfoType_1Dim)varType.OffsetInfoType;
+                        uint d1arrCount = d1arr.GetArrayElementCount();
+                        int d1arrLowerBound = d1arr.GetArrayLowerBounds();
+                        for (int i = 0; i < d1arrCount; i++) {
+                            arrayContent.Add(varName + "[" + i + "]");
+
+                        }
+                        output.Add(arrayContent);
+                    }
+
+                }
+                else if (varType.OffsetInfoType.IsMDim()) 
+                {
+                    // is Md array
+                    if (varType.OffsetInfoType.HasRelation()) {
+                        output.Add(varName + " <datatype = Md_Struct/Type_Array> ");
+                        //TODO
+
+                    } else {
+                        output.Add(varName + " <datatype = Md_Primitive_Array> ");
+                        //TODO
+                        
+                    }
+                }
+                else if (varType.OffsetInfoType.HasRelation()) 
+                {
+                    // is struct/type
+                    output.Add(" <datatype = struct/type> ");
+
+                    // recurse on each element of struct
+                    PObject pObj = plcConns[targetConnSessID].getTypeInfoByRelId(
+                        ((IOffsetInfoType_Relation)varType.OffsetInfoType).GetRelationId()
+                    );
+                    List<string> structVarNames = pObj.VarnameList.Names;
+                    List<S7CommPlusDriver.PVartypeListElement> structVarTypes = pObj.VartypeList.Elements;
+
+                    List<object> structContent = new List<object>(); 
+                    for (int i = 0; i < structVarNames.Count; i++) {
+                        string elemVarName = structVarNames[i];
+                        S7CommPlusDriver.PVartypeListElement elemVarType = structVarTypes[i];
+                        structContent.Add(
+                            recurse_probeDB(
+                                targetConnSessID,
+                                elemVarName,
+                                elemVarType
+                            )
+                        );
+                    }
+                    output.Add(structContent);
+                } 
+                else
+                {
+                    // is single valued
+                    output.Add(" <datatype = primitive> ");
+                }
+
+                return output;
+        }
+
+        public async Task<object> ProbeDataBlock(dynamic input) {
 
             // parse input
             UInt32 targetConnSessID = (UInt32)input.sessionID2;
             string targetDataBlockName = (string)input.dataBlockName;
 
             // init output object 
-            var output = new object();
+            var output = new List<object>();
 
-            if (plcConns.ContainsKey(targetConnSessID)) {
-                List<S7CommPlusConnection.DatablockInfo> dbInfoList = null;
-                int accessRes = plcConns[targetConnSessID].GetListOfDatablocks(out dbInfoList);
+            // check if connection exists
+            if (!plcConns.ContainsKey(targetConnSessID)) {
+                output.Add("Error no such connection");
+                return output;
+            }
 
-                if (accessRes != 0) {
-                    output = "Error executing GetListofDataBlocks()";
-                    return output;
+            // get target datablock 
+            List<S7CommPlusConnection.DatablockInfo> dbInfoList = null;
+            int accessRes = plcConns[targetConnSessID].GetListOfDatablocks(out dbInfoList);
+            if (accessRes != 0) {
+                output.Add("Error executing GetListofDataBlocks()");
+                return output;
+            }
+            S7CommPlusConnection.DatablockInfo targetDataBlock = null; 
+            foreach ( S7CommPlusConnection.DatablockInfo dataBlock in dbInfoList) {
+                if (dataBlock.db_name == targetDataBlockName) {
+                    targetDataBlock = dataBlock;
+                    break;
                 }
+            }
+            if (targetDataBlock is null) {
+                output.Add("Error: DataBlock with name: " + targetDataBlockName + " not found");
+                return output;
+            }
 
-                S7CommPlusConnection.DatablockInfo targetDataBlock = null; 
-                foreach ( S7CommPlusConnection.DatablockInfo dataBlock in dbInfoList) {
-                    if (dataBlock.db_name == targetDataBlockName) {
-                        targetDataBlock = dataBlock;
-                        break;
-                    }
-                    output = "Error: DataBlock with name: " + targetDataBlockName + " not found";
-                }
+            output.Add("Target DataBlock ID: " + targetDataBlock.db_block_ti_relid);
+            output.Add("===================");
 
-                PObject pObj1 = plcConns[targetConnSessID].getTypeInfoByRelId(targetDataBlock.db_block_ti_relid);
+            // get target datablock pObject
+            PObject targetDBpObj = plcConns[targetConnSessID].getTypeInfoByRelId(targetDataBlock.db_block_ti_relid);
 
-                Dictionary<string, string> trgtDBVarDims = new Dictionary<string, string>();
-                for (int i = 0; i < pObj1.VarnameList.Names.Count; ++i) {
-                    string varName = pObj1.VarnameList.Names[i];
-                    if (pObj1.VartypeList.Elements[i].OffsetInfoType.Is1Dim()) {
-                        trgtDBVarDims[varName] = "is 1 Dimensional";
-                    } else if (pObj1.VartypeList.Elements[i].OffsetInfoType.IsMDim()) {
-                        trgtDBVarDims[varName] = "is M Dimensional";
-                    } else {
-                        trgtDBVarDims[varName] = "is single value";
-                    }
-                    if (pObj1.VartypeList.Elements[i].OffsetInfoType.HasRelation()) {
-                        trgtDBVarDims[varName] += 
-                            " and Has Relation with relation ID: " + 
-                            ((IOffsetInfoType_Relation)pObj1.VartypeList.Elements[i].OffsetInfoType).GetRelationId();
-                    }
-                }
+            // begin probing target data block
+            Dictionary<string, string> trgtDBVarInfo = new Dictionary<string, string>();
+            for (int i = 0; i < targetDBpObj.VarnameList.Names.Count; ++i) {
 
-                Dictionary<string, PObject> trgtDBVarContents = new Dictionary<string, PObject>();
-                for (int i = 0; i < 3; ++i) {
-                    string varName = pObj1.VarnameList.Names[i];
-                    if (pObj1.VartypeList.Elements[i].OffsetInfoType.HasRelation()) {
-                        trgtDBVarContents[varName] = plcConns[targetConnSessID].getTypeInfoByRelId(
-                            ((IOffsetInfoType_Relation)pObj1.VartypeList.Elements[i].OffsetInfoType).GetRelationId()
-                        ); 
-                    } else {
-                        trgtDBVarContents[varName] = new PObject();
-                    }
-                }
-
-                //DEV NOTE: This works! This is how we navigate the variable levels within the PLC
-
-                output = trgtDBVarContents;
-
+                string varName = targetDBpObj.VarnameList.Names[i];
+                S7CommPlusDriver.PVartypeListElement varType = targetDBpObj.VartypeList.Elements[i];
+                output.Add(recurse_probeDB(targetConnSessID, varName, varType));
                 
-            } // else
+            }
+            output.Add(trgtDBVarInfo);
+            output.Add("===================");
 
             return output;
         }
-
-
-        /*public async Task<object> GetPObject_atDBInfoListIndex(dynamic input) {
-            int index = (int)input.index;
-            S7CommPlusConnection.DatablockInfo targetDB = DriverManager.dbInfoList[index];
-            UInt32 target_relid = targetDB.db_block_ti_relid;
-
-            PObject pObj = conn.getTypeInfoByRelId(target_relid);
-
-            return pObj;
-        }
-        //^^^^USE THIS GUY TO GET full DB INFO DETAILS
-
-        public async Task<object> GetDataBlockVariables_atDBInfoListIndex(dynamic input) {
-            int index = (int)input.index;
-            S7CommPlusConnection.DatablockInfo targetDB = DriverManager.dbInfoList[index];
-            UInt32 target_relid = targetDB.db_block_ti_relid;
-
-            PObject pObj = conn.getTypeInfoByRelId(target_relid);
-
-            PVarnameList datablockVars = pObj.VarnameList;
-
-            return datablockVars;
-        }
-
-        public async Task<object> GetDataBlockNamesandVariables(dynamic input) {
-            Dictionary<string, PVarnameList> DatablockNameVars = new Dictionary<string, PVarnameList>();
-
-            int dataBlockListAccessResult = conn.GetListOfDatablocks(out dbInfoList);
-            if (dataBlockListAccessResult != 0)
-            {
-                return "Error";
-            }
-
-            foreach (S7CommPlusConnection.DatablockInfo dbinfo in dbInfoList) {
-                DatablockNameVars[dbinfo.db_name] = conn.getTypeInfoByRelId(dbinfo.db_block_ti_relid).VarnameList;
-            }
-
-            return DatablockNameVars;
-        }
-
-        */
-
-        
     }
 }
+
+
+
+/*
+        public async Task<object> ProbeDataBlock(dynamic input) {
+
+            // parse input
+            UInt32 targetConnSessID = (UInt32)input.sessionID2;
+            string targetDataBlockName = (string)input.dataBlockName;
+
+            // init output object 
+            var output = new List<object>();
+
+            // check if connection exists
+            if (!plcConns.ContainsKey(targetConnSessID)) {
+                output.Add("Error no such connection");
+                return output;
+            }
+
+            // get target datablock 
+            List<S7CommPlusConnection.DatablockInfo> dbInfoList = null;
+            int accessRes = plcConns[targetConnSessID].GetListOfDatablocks(out dbInfoList);
+            if (accessRes != 0) {
+                output.Add("Error executing GetListofDataBlocks()");
+                return output;
+            }
+            S7CommPlusConnection.DatablockInfo targetDataBlock = null; 
+            foreach ( S7CommPlusConnection.DatablockInfo dataBlock in dbInfoList) {
+                if (dataBlock.db_name == targetDataBlockName) {
+                    targetDataBlock = dataBlock;
+                    break;
+                }
+            }
+            if (targetDataBlock is null) {
+                output.Add("Error: DataBlock with name: " + targetDataBlockName + " not found");
+                return output;
+            }
+
+            output.Add("Target DataBlock ID: " + targetDataBlock.db_block_ti_relid);
+            output.Add("===================");
+
+            // get target datablock pObject
+            PObject targetDBpObj = plcConns[targetConnSessID].getTypeInfoByRelId(targetDataBlock.db_block_ti_relid);
+
+            // begin probing target data block
+            Dictionary<string, string> trgtDBVarInfo = new Dictionary<string, string>();
+            for (int i = 0; i < targetDBpObj.VarnameList.Names.Count; ++i) {
+                string varName = targetDBpObj.VarnameList.Names[i];
+                S7CommPlusDriver.PVartypeListElement varType = targetDBpObj.VartypeList.Elements[i];
+
+                if (varType.OffsetInfoType.Is1Dim()) {
+                    trgtDBVarInfo[varName] = "[ is 1D array ]";
+
+                    if (varType.OffsetInfoType.HasRelation()) {
+                        trgtDBVarInfo[varName] += "[ has relid: " + 
+                            ((IOffsetInfoType_Relation)varType.OffsetInfoType).GetRelationId() + " ]";
+
+                        trgtDBVarInfo[varName] += "[ elements hold: ";  
+                        PObject pObj = plcConns[targetConnSessID].getTypeInfoByRelId(
+                            ((IOffsetInfoType_Relation)varType.OffsetInfoType).GetRelationId()
+                        );
+                        for (int j = 0; j < pObj.VarnameList.Names.Count; j++) {
+                            string innerVarName =  pObj.VarnameList.Names[j];
+                            S7CommPlusDriver.PVartypeListElement innerVarType = pObj.VartypeList.Elements[j];
+
+                            trgtDBVarInfo[varName] += " / " + innerVarName;
+
+                            if (pObj.VartypeList.Elements[j].OffsetInfoType.HasRelation()) {
+                                trgtDBVarInfo[varName] += 
+                                    "[ has relid: " +
+                                    ((IOffsetInfoType_Relation)innerVarType.OffsetInfoType).GetRelationId() + " ]";
+
+                                trgtDBVarInfo[varName] += "[ holds: "; 
+                                PObject pObj1 = plcConns[targetConnSessID].getTypeInfoByRelId(
+                                    ((IOffsetInfoType_Relation)pObj.VartypeList.Elements[j].OffsetInfoType).GetRelationId()
+                                );
+                                for (int k = 0; k < pObj1.VarnameList.Names.Count; k++) {
+                                    string ininVarName =  pObj1.VarnameList.Names[k];
+                                    S7CommPlusDriver.PVartypeListElement ininVarType = pObj1.VartypeList.Elements[k];
+
+                                    trgtDBVarInfo[varName] += " // " + ininVarName;
+                                }
+                                trgtDBVarInfo[varName] += " ]"; 
+                            }
+                        }
+                        trgtDBVarInfo[varName] += " ]"; 
+
+
+                    }
+
+                } else if (targetDBpObj.VartypeList.Elements[i].OffsetInfoType.IsMDim()) {
+                    trgtDBVarInfo[varName] = "is M Dimensional";
+
+                } else {
+                    trgtDBVarInfo[varName] = "[ is single value ]";
+
+                    if (varType.OffsetInfoType.HasRelation()) {
+                        trgtDBVarInfo[varName] += 
+                            "[ has relid: " + 
+                            ((IOffsetInfoType_Relation)varType.OffsetInfoType).GetRelationId() + " ]";
+                        
+                        trgtDBVarInfo[varName] += "[ holds: "; 
+                        PObject pObj = plcConns[targetConnSessID].getTypeInfoByRelId(
+                            ((IOffsetInfoType_Relation)targetDBpObj.VartypeList.Elements[i].OffsetInfoType).GetRelationId()
+                        );
+                        for (int j = 0; j < pObj.VarnameList.Names.Count; j++) {
+                            string innerVarName =  pObj.VarnameList.Names[j];
+                            S7CommPlusDriver.PVartypeListElement innerVarType = pObj.VartypeList.Elements[j];
+
+                            trgtDBVarInfo[varName] += " / " + innerVarName;
+
+                            if (pObj.VartypeList.Elements[j].OffsetInfoType.HasRelation()) {
+                                trgtDBVarInfo[varName] += 
+                                    "[ has relid: " +
+                                    ((IOffsetInfoType_Relation)innerVarType.OffsetInfoType).GetRelationId() + " ]";
+
+                                trgtDBVarInfo[varName] += "[ holds: "; 
+                                PObject pObj1 = plcConns[targetConnSessID].getTypeInfoByRelId(
+                                    ((IOffsetInfoType_Relation)pObj.VartypeList.Elements[j].OffsetInfoType).GetRelationId()
+                                );
+                                for (int k = 0; k < pObj1.VarnameList.Names.Count; k++) {
+                                    string ininVarName =  pObj1.VarnameList.Names[k];
+                                    S7CommPlusDriver.PVartypeListElement ininVarType = pObj1.VartypeList.Elements[k];
+
+                                    trgtDBVarInfo[varName] += " // " + ininVarName;
+                                }
+                                trgtDBVarInfo[varName] += " ]"; 
+                            }
+                        }
+                        trgtDBVarInfo[varName] += " ]"; 
+                    }
+                }
+            }
+            output.Add(trgtDBVarInfo);
+            output.Add("===================");
+
+            return output;
+        }
+*/

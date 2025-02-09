@@ -318,12 +318,12 @@ const PollTags = (ipAddress, tagSymbols, interval_t = 1000) => {
 }
 
 
-var GetDataBlockContent_ = edge.func({
+var ProbeDataBlock_ = edge.func({
     assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
     typeName: 'S7CommPlusDriverWrapper.DriverManager',
-    methodName: 'GetDataBlockContent'
+    methodName: 'ProbeDataBlock'
 });
-const GetDataBlockContent = (ipAddress, dataBlockName) => {
+const ProbeDataBlock = (ipAddress, dataBlockName) => {
     return new Promise((resolve,reject) => {
 
         // check for IP
@@ -341,7 +341,7 @@ const GetDataBlockContent = (ipAddress, dataBlockName) => {
             sessionID2: sessionID2,
             dataBlockName: dataBlockName
         }
-        GetDataBlockContent_(input, (error, output) => {
+        ProbeDataBlock_(input, (error, output) => {
             if (error) {
                 reject(error);
                 return;
@@ -394,15 +394,32 @@ async function main() {
         console.log("\n====================================\n");
 
         
+        //DEV NOTE: This works and will be very important later, but right now its output is huge and
+        //overflows terminal
+        console.log("\n=== Testing Datablock Probe ===\n");
+        const dataBlockName = "Test";
+        result = await ProbeDataBlock(testPlcIP2, dataBlockName);
+        console.log("probing datablock: " + dataBlockName + "\n\tin PLC @ IP: " + testPlcIP2);
+        fs.writeFileSync('datablockProbeOutput.txt', result, 'utf8', (err) => {
+            if (err) { throw new Error(err.message); }
+        });
+        console.log("\n====================================\n");
 
-        console.log("\n=== Testing Tag Polling ===\n");
+        console.log("\n=== Testing Multiple PLC Disconnecting ===\n");
+        console.log("Disconnecting from PLC's @ IPs: \n");
+        for (let i = 0; i < targetPlcIPs_disconnect.length; i++) {
+            console.log(i + ". " + targetPlcIPs_disconnect[i] + "\n");
+        }
+        result = await MultiDisconnect(targetPlcIPs_disconnect);
+        console.log(result); 
+        console.log("\n====================================\n");
+
+        /*console.log("\n=== Testing Tag Polling ===\n");
         console.log("Polling PLC @ IP: " + testPlcIP2 + "\n");
-        
         //initialize clean output file
         fs.writeFile('tagValueOutput.txt', '', (err) => {
             if (err) { throw new Error(err.message); }
         });
-
         //begin polling asynchronously
         const tagSymbols2 = ["Test.bool", "Test.Int", "Test.Dint", "Test.Real", "Test.Lreal"]; 
         const pollRes = PollTags(
@@ -410,7 +427,6 @@ async function main() {
             tagSymbols2, 
             5000
         );
-
         // define handling of polled tag values
         pollRes.subject.subscribe({
             next: (result) => {
@@ -433,7 +449,6 @@ async function main() {
                 throw new Error(err.message);
             }
         })
-
         // Listen for user input to stop the polling 
         // (stop main program execution here, polling should still be executing asynchronously while main program waits for user input)
         rl.question('Enter "stop" to stop polling: ', async (answer) => {
@@ -457,13 +472,50 @@ async function main() {
                 console.log('Invalid command. Please enter "stop" to stop.');
                 rl.close();  // Close the readline interface
             }
-        });
+        });*/
 
     } catch (error) {
         console.log("Error:\n >>>", error.message);
     }
 }
 main();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*console.log("\n=== Testing Get Tags ===\n");
         const tagSymbols1 = ["Test.bool", "Test.Int", "Test.Dint", "Test.Real, Test.Lreal"];
