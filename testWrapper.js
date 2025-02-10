@@ -355,6 +355,46 @@ const ProbeDataBlock = (ipAddress, dataBlockName) => {
 
 
 
+
+
+
+var GetDataBlockPlcTags_ = edge.func({
+    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
+    typeName: 'S7CommPlusDriverWrapper.DriverManager',
+    methodName: 'GetDataBlockPlcTags'
+});
+const GetDataBlockPlcTags = (ipAddress, dataBlockName) => {
+    return new Promise((resolve,reject) => {
+
+        // check for IP
+        if ( !(plcConns.has(ipAddress)) ) {
+            reject(new Error(
+                "no such PLC connection @ IP: " + ipAddress + " exists"
+            ));
+            return;
+        } // else
+        // retrieve corresponding sessionID for IP
+        let sessionID2 = plcConns.get(ipAddress);
+
+        // init input object
+        input = {
+            sessionID2: sessionID2,
+            dataBlockName: dataBlockName
+        }
+        GetDataBlockPlcTags_(input, (error, output) => {
+            if (error) {
+                reject(error);
+                return;
+            } // else 
+            // GetDataBlockPlcTags executed successfully
+    
+            resolve(JSON.stringify(output, null, 2));
+        });
+    })
+}
+
+
+
 async function main() {
 
     const rl = readline.createInterface({
@@ -393,14 +433,20 @@ async function main() {
         console.log(result);
         console.log("\n====================================\n");
 
-        
-        //DEV NOTE: This works and will be very important later, but right now its output is huge and
-        //overflows terminal
-        console.log("\n=== Testing Datablock Probe ===\n");
-        const dataBlockName = "Test";
-        result = await ProbeDataBlock(testPlcIP2, dataBlockName);
-        console.log("probing datablock: " + dataBlockName + "\n\tin PLC @ IP: " + testPlcIP2);
+        /*console.log("\n=== Testing Datablock Probe ===\n");
+        const dataBlockName1 = "Test";
+        result = await ProbeDataBlock(testPlcIP2, dataBlockName1);
+        console.log("probing datablock: " + dataBlockName1 + "\n\tin PLC @ IP: " + testPlcIP2);
         fs.writeFileSync('datablockProbeOutput.txt', result, 'utf8', (err) => {
+            if (err) { throw new Error(err.message); }
+        });
+        console.log("\n====================================\n");*/
+
+        console.log("\n=== Testing GetDataBlockPlcTags ===\n");
+        const dataBlockName2 = "Test";
+        result = await GetDataBlockPlcTags(testPlcIP2, dataBlockName2);
+        console.log("getting PlcTags of: " + dataBlockName2 + "\n\tin PLC @ IP: " + testPlcIP2);
+        fs.writeFileSync('datablockPlcTagOutput.txt', result, 'utf8', (err) => {
             if (err) { throw new Error(err.message); }
         });
         console.log("\n====================================\n");
