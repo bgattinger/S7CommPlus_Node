@@ -343,6 +343,24 @@ namespace S7CommPlusDriverWrapper
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         public List<object> recurse_probeDB(
             UInt32 targetConnSessID,
             string varName, 
@@ -519,6 +537,25 @@ namespace S7CommPlusDriverWrapper
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         public async Task<object> ReadTags(dynamic input) {
 
             // parse input
@@ -555,29 +592,62 @@ namespace S7CommPlusDriverWrapper
 
 
 
-        /*public async Task<object> WriteTags(dynamic input) {
+        public async Task<object> WriteTags(dynamic input) {
 
             // parse input
-            UInt32 targetConnSessID = (UInt32)input.sessionID2;
-            List<Tuple<string, ItemAddress, UInt32>> tagProfiles = new List<Tuple<string, ItemAddress, UInt32>>();
-            foreach (var tagProfile in input.tagProfiles ) {
-                string name = (string)tagProfile.Name;
-
-                ItemAddress ia = new ItemAddress();
-                ia.SymbolCrc = (UInt32)tagProfile.address.SymbolCrc;
-                ia.AccessArea = (UInt32)tagProfile.address.AccessArea;
-                ia.AccessSubArea = (UInt32)tagProfile.address.AccessSubArea;
-                ia.LID = ((IEnumerable<object>)tagProfile.address.LID).Cast<UInt32>().ToList();
-
-                UInt32 dataType = (UInt32)tagProfile.Datatype; 
-
-                tagProfiles.Add(new Tuple<string, ItemAddress, uint> (
-                    name,
-                    ia,
-                    dataType
-                ));
+            UInt32 targetConnSessID = Convert.ToUInt32(input.sessionID2 ?? 0);
+            List<(
+                string tagName, 
+                ItemAddress tagAddress, 
+                UInt32 tagDataType
+            )> targetTagProfiles = new List<(
+                string tagName, 
+                ItemAddress tagAddress, 
+                uint tagDataType
+            )>();
+            foreach (var tp in input.tagProfiles ) {
+                targetTagProfiles.Add(
+                    (
+                        tagName: (string)tp.Name,
+                        tagAddress: new ItemAddress {
+                            SymbolCrc = Convert.ToUInt32(tp.address.SymbolCrc ?? 0),
+                            AccessArea = Convert.ToUInt32(tp.address.AccessArea ?? 0),
+                            AccessSubArea = Convert.ToUInt32(tp.address.AccessSubArea ?? 0),
+                            LID = tp.address.LID != null 
+                                ? ((IEnumerable<object>)tp.address.LID).Select(obj => Convert.ToUInt32(obj)).ToList() 
+                                : new List<UInt32>()
+                        },
+                        tagDataType: Convert.ToUInt32(tp.Datatype ?? 0)
+                    )
+                );
             }
-        }*/
+
+            // init output object (initialize to unsuccsseful write values)
+            var output = (
+                writeRes: (int)-1,
+                writeTags: new List<PlcTag>()
+            );
+
+            if (!plcConns.ContainsKey(targetConnSessID)) {
+                return output;
+            } // else
+
+            // build PlcTag objects
+            PlcTags tagsToWrite = new PlcTags();
+            foreach (var ttp in targetTagProfiles) {
+                PlcTag tag = PlcTags.TagFactory(ttp.tagName, ttp.tagAddress, ttp.tagDataType);
+
+                if (tag != null) {
+                    output.writeTags.Add(tag);
+                    tagsToWrite.AddTag(tag);
+                }   
+            }
+
+            // read tag values into PLC tag objects
+            output.writeRes = await Task.Run(() => tagsToWrite.WriteTags(plcConns[targetConnSessID]));
+
+            return output;
+        }
 
 
 

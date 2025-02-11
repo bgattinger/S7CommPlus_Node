@@ -298,6 +298,8 @@ const SaveDataBlockPlcTags = (ipAddress, plcTagList, dataBlockName) => {
     return new Promise((resolve,reject) => {
         let plcTagLokiDB_file =  `PlcTagDB_${ipAddress}.json`;
         var db = null;
+
+        //TODO, check for valid IP and non-null plcTagList
         
         const initDB = () => {
             let tagColl = db.getCollection(dataBlockName);
@@ -479,6 +481,26 @@ const PollTags = (ipAddress, tagSymbols, interval_t = 1000) => {
 
 
 
+var WriteTags_ = edge.func({
+    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
+    typeName: 'S7CommPlusDriverWrapper.DriverManager',
+    methodName: 'WriteTags'
+});
+const WriteTags = (ipAddress, tagSymbols) => {
+    return new Promise((resolve,reject) => {
+
+    });
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -554,7 +576,6 @@ async function main() {
         console.log("saving PlcTag object list retrieved from " + targetDatablockName1 + "\n\tin PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
         PlcTagDbRes = await SaveDataBlockPlcTags(targetPlcIPs_connect[1].ipAddress, PlcTagListRes, targetDatablockName1);
         console.log("\n====================================\n");
-
 
         console.log("\n=== Testing Multiple PLC Disconnecting ===\n");
         console.log("Disconnecting from PLC's @ IPs: \n");
