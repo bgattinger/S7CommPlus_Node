@@ -300,11 +300,14 @@ const SaveDataBlockPlcTags = (ipAddress, plcTagList, dataBlockName) => {
         var db = null;
 
         //TODO, check for valid IP and non-null plcTagList
-        
+
         const initDB = () => {
             let tagColl = db.getCollection(dataBlockName);
             if (tagColl) {
                 db.removeCollection(dataBlockName);
+            } else {
+                reject(new Error(`Collection '${dataBlockName}' not found!`));
+                return;
             }
             tagColl = db.addCollection(dataBlockName);
 
@@ -325,8 +328,44 @@ const SaveDataBlockPlcTags = (ipAddress, plcTagList, dataBlockName) => {
             db = new loki(plcTagLokiDB_file);
             initDB();
         }
+
+        
     });
 }
+const QueryLokiDB_GetPlcTagsByNames = (plcTagLokiDB_file, dataBlockName, tagNames) => {
+    return new Promise((resolve,reject) => {
+        let queryResult = [];
+        var db = null;
+
+        const queryDB = () => {
+            let tagColl = db.getCollection(dataBlockName);
+            if (tagColl) {
+                queryResult = tagColl.find({ Name: { '$in': tagNames } });
+                resolve(queryResult.map(
+                    ({Name, Address, Datatype}) => ({
+                        Name, Address, Datatype
+                    })
+                ))
+
+            } else {
+                reject(new Error(`Collection '${dataBlockName}' not found!`));
+                return;
+            }
+        }
+
+        if (fs.existsSync(plcTagLokiDB_file)) {
+            console.log("PlcTag Database File Found. Loading...");
+            db = new loki(plcTagLokiDB_file, {
+                autoload: true,
+                autoloadCallback: queryDB
+            });
+        } else {
+            reject(new Error(`Database '${plcTagLokiDB_file}' not found!`));
+            return;
+        }
+    });
+}
+
 
 
 
@@ -550,6 +589,10 @@ async function main() {
 
     targetDatablockName1 = "Test";
 
+    targetLokiDB1 = "PlcTagDB_192.168.18.26.json";
+
+    const targetTagSymbols1 = ["Test.bool", "Test.Int", "Test.Dint", "Test.Real", "Test.Lreal"]; 
+
     targetPlcIPs_disconnect = [
         "192.168.18.25",
         "192.168.18.26"
@@ -570,11 +613,24 @@ async function main() {
         console.log("\n=== Testing GetDataBlockPlcTags ===\n");
         console.log("getting PlcTags of: " + targetDatablockName1 + "\n\tin PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
         PlcTagListRes = await GetDataBlockPlcTags(targetPlcIPs_connect[1].ipAddress, targetDatablockName1);
+        console.log("Successfully retrieved PlcTags from Datablock: " + targetDatablockName1 + " in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
         console.log("\n====================================\n");
 
         console.log("\n=== Testing SaveDataBlockPlcTags ===\n");
         console.log("saving PlcTag object list retrieved from " + targetDatablockName1 + "\n\tin PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
         PlcTagDbRes = await SaveDataBlockPlcTags(targetPlcIPs_connect[1].ipAddress, PlcTagListRes, targetDatablockName1);
+        console.log("Successfully saved PlcTags retrieved from Datablock: " + targetDatablockName1 + 
+            " in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress + " to LokiDB: " +PlcTagDbRes);
+        console.log("\n====================================\n");
+
+        console.log("\n=== Testing QueryLokiDB_GetPlcTagsByName ===\n");
+        console.log("getting Plc tags with names: \n")
+        for (let i = 0; i < targetTagSymbols1.length; i++) {
+            console.log(targetTagSymbols1[i] + "\n");
+        }
+        console.log("from collection " + targetDatablockName1 + " in PlcTag database " + targetLokiDB1);
+        PlcTagQueryResults = await QueryLokiDB_GetPlcTagsByNames(PlcTagDbRes, targetDatablockName1, targetTagSymbols1);
+        console.log("Successfully queried LokiDB: " + PlcTagDbRes + " and retrieved values: " + JSON.stringify(PlcTagQueryResults,null,2));
         console.log("\n====================================\n");
 
         console.log("\n=== Testing Multiple PLC Disconnecting ===\n");
