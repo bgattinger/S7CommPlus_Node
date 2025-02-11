@@ -1,5 +1,6 @@
 
 const edge = require('edge-js');
+const loki = require("lokijs");
 const async = require('async');
 const { interval, from, Subject } = require('rxjs');
 const { map, mergeMap } = require('rxjs/operators');
@@ -232,11 +233,163 @@ const GetDataBlockInfoList = (ipAddress) => {
 
             resolve({
                 ipAddress: ipAddress,
-                dbInfoList: JSON.stringify(dbInfoList, null, 2)
+                dbInfoList: dbInfoList
             });
         });
     });
 };
+
+
+
+
+
+
+
+
+
+
+
+var GetDataBlockPlcTags_ = edge.func({
+    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
+    typeName: 'S7CommPlusDriverWrapper.DriverManager',
+    methodName: 'GetDataBlockPlcTags'
+});
+const GetDataBlockPlcTags = (ipAddress, dataBlockName) => {
+    return new Promise((resolve,reject) => {
+
+        // check for IP
+        if ( !(plcConns.has(ipAddress)) ) {
+            reject(new Error(
+                "no such PLC connection @ IP: " + ipAddress + " exists"
+            ));
+            return;
+        } // else
+        // retrieve corresponding sessionID for IP
+        let sessionID2 = plcConns.get(ipAddress);
+
+        // init input object
+        input = {
+            sessionID2: sessionID2,
+            dataBlockName: dataBlockName
+        }
+        GetDataBlockPlcTags_(input, (error, output) => {
+            if (error) {
+                reject(error);
+                return;
+            } // else 
+            // GetDataBlockPlcTags executed successfully
+
+            // parse output object
+            let plcTagAccRes = output.Item1;
+            let plcTagAccErr = output.Item2;
+            let plcTagList = output.Item3;
+    
+            if (plcTagAccRes != 1) {
+                reject(new Error(
+                    "unable to retrieve Tags from PLC @ IP: " + ipAddress + " (Error: " + plcTagAccErr + ")"
+                ));
+                return;
+            }
+            resolve(plcTagList);
+        });
+    })
+}
+const SaveDataBlockPlcTags = (ipAddress, plcTagList, dataBlockName) => {
+    return new Promise((resolve,reject) => {
+        let plcTagLokiDB_file =  `PlcTagDB_${ipAddress}.json`;
+        var db = null;
+        
+        const initDB = () => {
+            let tagColl = db.getCollection(dataBlockName);
+            if (tagColl) {
+                db.removeCollection(dataBlockName);
+            }
+            tagColl = db.addCollection(dataBlockName);
+
+            plcTagList.forEach(tag => tagColl.insert(tag));
+            db.saveDatabase(() => {
+                resolve(plcTagLokiDB_file);
+            });
+        }
+
+        if (fs.existsSync(plcTagLokiDB_file)) {
+            console.log("PlcTag Database File Found. Loading...");
+            db = new loki(plcTagLokiDB_file, {
+                autoload: true,
+                autoloadCallback: initDB
+            });
+        } else {
+            console.log("PlcTag Database File not Found. Creating New PlcTag Database File...");
+            db = new loki(plcTagLokiDB_file);
+            initDB();
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var ProbeDataBlock_ = edge.func({
+    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
+    typeName: 'S7CommPlusDriverWrapper.DriverManager',
+    methodName: 'ProbeDataBlock'
+});
+const ProbeDataBlock = (ipAddress, dataBlockName) => {
+    return new Promise((resolve,reject) => {
+
+        // check for IP
+        if ( !(plcConns.has(ipAddress)) ) {
+            reject(new Error(
+                "no such PLC connection @ IP: " + ipAddress + " exists"
+            ));
+            return;
+        } // else
+        // retrieve corresponding sessionID for IP
+        let sessionID2 = plcConns.get(ipAddress);
+
+        // init input object
+        input = {
+            sessionID2: sessionID2,
+            dataBlockName: dataBlockName
+        }
+        ProbeDataBlock_(input, (error, output) => {
+            if (error) {
+                reject(error);
+                return;
+            } // else 
+            // GetTags executed successfully
+    
+            resolve(JSON.stringify(output, null, 2));
+        });
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -318,80 +471,38 @@ const PollTags = (ipAddress, tagSymbols, interval_t = 1000) => {
 }
 
 
-var ProbeDataBlock_ = edge.func({
-    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
-    typeName: 'S7CommPlusDriverWrapper.DriverManager',
-    methodName: 'ProbeDataBlock'
-});
-const ProbeDataBlock = (ipAddress, dataBlockName) => {
-    return new Promise((resolve,reject) => {
-
-        // check for IP
-        if ( !(plcConns.has(ipAddress)) ) {
-            reject(new Error(
-                "no such PLC connection @ IP: " + ipAddress + " exists"
-            ));
-            return;
-        } // else
-        // retrieve corresponding sessionID for IP
-        let sessionID2 = plcConns.get(ipAddress);
-
-        // init input object
-        input = {
-            sessionID2: sessionID2,
-            dataBlockName: dataBlockName
-        }
-        ProbeDataBlock_(input, (error, output) => {
-            if (error) {
-                reject(error);
-                return;
-            } // else 
-            // GetTags executed successfully
-    
-            resolve(JSON.stringify(output, null, 2));
-        });
-    });
-}
 
 
 
 
 
 
-var GetDataBlockPlcTags_ = edge.func({
-    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
-    typeName: 'S7CommPlusDriverWrapper.DriverManager',
-    methodName: 'GetDataBlockPlcTags'
-});
-const GetDataBlockPlcTags = (ipAddress, dataBlockName) => {
-    return new Promise((resolve,reject) => {
 
-        // check for IP
-        if ( !(plcConns.has(ipAddress)) ) {
-            reject(new Error(
-                "no such PLC connection @ IP: " + ipAddress + " exists"
-            ));
-            return;
-        } // else
-        // retrieve corresponding sessionID for IP
-        let sessionID2 = plcConns.get(ipAddress);
 
-        // init input object
-        input = {
-            sessionID2: sessionID2,
-            dataBlockName: dataBlockName
-        }
-        GetDataBlockPlcTags_(input, (error, output) => {
-            if (error) {
-                reject(error);
-                return;
-            } // else 
-            // GetDataBlockPlcTags executed successfully
-    
-            resolve(JSON.stringify(output, null, 2));
-        });
-    })
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -402,8 +513,6 @@ async function main() {
         output: process.stdout
     });
 
-    testPlcIP1 = "192.168.18.25";
-    testPlcIP2 = "192.168.18.26";
     targetPlcIPs_connect = [
         {
             ipAddress: "192.168.18.25",
@@ -416,6 +525,9 @@ async function main() {
             timeout: 5000
         }
     ];
+
+    targetDatablockName1 = "Test";
+
     targetPlcIPs_disconnect = [
         "192.168.18.25",
         "192.168.18.26"
@@ -429,27 +541,20 @@ async function main() {
         for (let i = 0; i < targetPlcIPs_connect.length; i++) {
             console.log(i + ". " + JSON.stringify(targetPlcIPs_connect[i], null, 2) + "\n");
         }
-        result = await MultiConnect(targetPlcIPs_connect)
-        console.log(result);
+        MultiConnRes = await MultiConnect(targetPlcIPs_connect)
+        console.log(MultiConnRes);
         console.log("\n====================================\n");
-
-        /*console.log("\n=== Testing Datablock Probe ===\n");
-        const dataBlockName1 = "Test";
-        result = await ProbeDataBlock(testPlcIP2, dataBlockName1);
-        console.log("probing datablock: " + dataBlockName1 + "\n\tin PLC @ IP: " + testPlcIP2);
-        fs.writeFileSync('datablockProbeOutput.txt', result, 'utf8', (err) => {
-            if (err) { throw new Error(err.message); }
-        });
-        console.log("\n====================================\n");*/
 
         console.log("\n=== Testing GetDataBlockPlcTags ===\n");
-        const dataBlockName2 = "Test";
-        result = await GetDataBlockPlcTags(testPlcIP2, dataBlockName2);
-        console.log("getting PlcTags of: " + dataBlockName2 + "\n\tin PLC @ IP: " + testPlcIP2);
-        fs.writeFileSync('datablockPlcTagOutput.txt', result, 'utf8', (err) => {
-            if (err) { throw new Error(err.message); }
-        });
+        console.log("getting PlcTags of: " + targetDatablockName1 + "\n\tin PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
+        PlcTagListRes = await GetDataBlockPlcTags(targetPlcIPs_connect[1].ipAddress, targetDatablockName1);
         console.log("\n====================================\n");
+
+        console.log("\n=== Testing SaveDataBlockPlcTags ===\n");
+        console.log("saving PlcTag object list retrieved from " + targetDatablockName1 + "\n\tin PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
+        PlcTagDbRes = await SaveDataBlockPlcTags(targetPlcIPs_connect[1].ipAddress, PlcTagListRes, targetDatablockName1);
+        console.log("\n====================================\n");
+
 
         console.log("\n=== Testing Multiple PLC Disconnecting ===\n");
         console.log("Disconnecting from PLC's @ IPs: \n");
@@ -460,7 +565,130 @@ async function main() {
         console.log(result); 
         console.log("\n====================================\n");
 
-        /*console.log("\n=== Testing Tag Polling ===\n");
+        
+
+        rl.close()
+    } catch (error) {
+        console.log("Error:\n >>>", error.message);
+        rl.close()
+    }
+}
+main();
+
+
+
+
+
+/*class ConsoleUI {
+    constructor() {
+        this.ui = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+        
+        this.commandList = {
+            1: "Connect to PLC(s)",
+            2: "View PLC Connections",
+            3: "Get PLC Datablocks",
+            4: "Get PLC Tags",
+            5: "Read from PLC Tags",
+            6: "Write to PLC Tags",
+            7: "Disconnect from PLC(s)",
+            8: "Exit"
+        }
+
+        this.commandPrompt = "Enter a Command: \n";
+        for (const [key,val] of Object.entries(this.commandList)) {
+            this.commandPrompt += ("\t" + key + ". " + val + "\n");
+        }
+    }
+
+    promptUser() {
+        //build command prompt
+        var commandPrompt 
+        this.ui.question(
+            this.commandPrompt,
+            (command) => {
+                if (command === '8') {
+                    console.log("Exiting Console Interface...");
+                    this.ui.close()
+                } else {
+                    if (command === '1') {
+                        console.log("<1>");
+                    } else if (command === '2') {
+                        console.log("<2>");
+                    } else if (command === '3') {
+                        console.log("<3>");
+                    } else if (command === '4') {
+                        console.log("<4>");
+                    } else if (command === '5') {
+                        console.log("<5>");
+                    } else if (command === '6') {
+                        console.log("<6>");
+                    } else if (command === '7') {
+                        console.log("<7>");
+                    } else {
+                        console.log("Invalid Command");
+                    }
+                    this.promptUser();
+                }
+            }
+        )
+    }
+    start() {
+        console.log("Console Interface Started...");
+        this.promptUser();
+    }
+}
+
+async function main1() {
+    const consoleUI = new ConsoleUI();
+    consoleUI.start();
+}
+main1();*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*console.log("\n=== Testing Tag Polling ===\n");
         console.log("Polling PLC @ IP: " + testPlcIP2 + "\n");
         //initialize clean output file
         fs.writeFile('tagValueOutput.txt', '', (err) => {
@@ -520,288 +748,27 @@ async function main() {
             }
         });*/
 
-    } catch (error) {
-        console.log("Error:\n >>>", error.message);
-    }
-}
-main();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*console.log("\n=== Testing Get Tags ===\n");
-        const tagSymbols1 = ["Test.bool", "Test.Int", "Test.Dint", "Test.Real, Test.Lreal"];
-        result = await ReadTags(testPlcIP2, tagSymbols1);
-        console.log("successfully retrieved Tag values from PLC @ IP: " + result.ipAddress);
-        console.log("Read Tag values:");
-        result.readTags.forEach(tag => {
-            console.log(`Tag Name: ${tag.Name}`);
-            console.log(`Tag Value: ${tag.Value}`);
-            console.log(`Tag DataType: ${tag.Datatype}`);
-            console.log("-----------");
-        })
-        console.log("\n====================================\n");*/
-
-//await new Promise(resolve => setTimeout(resolve, 5000));
-
-        /*console.log("\n=== Testing GetDataBlockInfoList ===\n");
-        result = await GetDataBlockInfoList(targetPlcIP);
-        console.log("successfully retrieved Datablock Information List from PLC @ IP: " + result.ipAddress);
-        console.log("Datablock Information List: \n" + result.dbInfoList);
-        console.log("\n====================================\n")
-
-        
-
-        /*
-        //DEV NOTE: This works and will be very important later, but right now its output is huge and
-        //overflows terminal
-        console.log("\n=== Testing GetDataBlockContent ===\n");
-        const dataBlockName = "GlobalData";
-        result = await GetDataBlockContent(targetPlcIP, dataBlockName);
-        console.log("successfully retrieved datablock: " + dataBlockName + "\n\tfrom PLC @ IP: " + targetPlcIP);
-        console.log("Datablock Content: \n" + result);
-        console.log("\n====================================\n");*/
-
-
-/*console.log("\n=== Testing Connect ===\n");
-        console.log("Connecting to PLC @ IP: " + targetPlcIP)
-        result = await Connect(targetPlcIP, "", 5000);
-        console.log("successful connection to PLC @ IP: " + result.ipAddress + " (SessionID: " + result.sessID2 + ")");
-        console.log("\n====================================\n");*/
-
 
 /*
-
-/*console.log("\n=== Testing Disconnect ===\n");
-        console.log("Disconnecting from PLC @ IP : " + targetPlcIP);
-        result = await Disconnect(targetPlcIP); 
-        console.log("successful disconnect from PLC @ IP: " + result.ipAddress + " (SessionID: " + result.sessID2 + ")");
-        console.log("\n====================================\n");*/
-
+const outputFileName2 = 'datablockPlcTagOutput.txt';
+fs.truncateSync(outputFileName2, 0); // explicitly clear file
+fs.writeFileSync('datablockPlcTagOutput.txt', JSON.stringify(result, null, 2), 'utf8');
+*/
 
 /*function isValidIPv4(ip) {
     const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     return ipv4Regex.test(ip);
-}
-const rl_interface = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
+}*/
 
-    let targetPlcIP = ""
-    rl_interface.question("Enter PLC IP address:\n >", (userInput) => {
-        
-    });
+/* 
 
-    // prompt user to enter valid IP address
-    
-    let userInputValid = false
-    while (!userInputValid) {
-        let userInput = prompt();
-        if (isValidIPv4(userInput)) {
-            targetPlcIP = userInput;
-            userInputValid = true;
-            break;
-        }
-        console.log("Invalid IP address entered\n");
-    }
-    // user has entered valid IP address*/
-
-
-
-
-
-/*var GetDataBlockInfoList_ = edge.func({
-    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
-    typeName: 'S7CommPlusDriverWrapper.DriverManager',
-    methodName: 'GetDataBlockInfoList'
-});
-
-
-
-async function main() {
-    try {
-        console.log("\n====================================\n");
-
-        const connParams = {
-            ipAddress: "192.168.18.25",
-            password: "", 
-            timeout: 5000
-        } 
-        const connRes = await Connect(connParams);  // Connect is now a Promise-based function
-        console.log("Connected successfully!");
-        console.log("Connection Result: " + connRes);
-
-        console.log("\n====================================\n");
-
-        const dataBlockInfo = await GetDataBlockInfoList();
-        console.log("Data Block Information successfully retrieved");
-        console.log("Data Block Info:", dataBlockInfo);
-
-        console.log("\n====================================\n");
-
-    } catch (error) {
-        console.log("Error:", error.message);
-    }
-}
-main();
 */
 
 
+//await new Promise(resolve => setTimeout(resolve, 5000));
+
+        
+
+       
 
 
-
-
-
-
-/*const edge = require('edge-js');
-
-
-
-var Connect = edge.func({
-    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
-    typeName: 'S7CommPlusDriverWrapper.DriverManager',
-    methodName: 'Connect'
-});
-
-var GetDataBlockInfoList = edge.func({
-    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
-    typeName: 'S7CommPlusDriverWrapper.DriverManager',
-    methodName: 'GetDataBlockInfoList'
-});
-
-var GetPObject_atDBInfoListIndex = edge.func({
-    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
-    typeName: 'S7CommPlusDriverWrapper.DriverManager',
-    methodName: 'GetPObject_atDBInfoListIndex'
-});
-
-var GetDataBlockVariables_atDBInfoListIndex = edge.func({
-    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
-    typeName: 'S7CommPlusDriverWrapper.DriverManager',
-    methodName: 'GetDataBlockVariables_atDBInfoListIndex'
-});
-
-var GetDataBlockNamesandVariables = edge.func({
-    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
-    typeName: 'S7CommPlusDriverWrapper.DriverManager',
-    methodName: 'GetDataBlockNamesandVariables'
-});
-
-
-var GetTag = edge.func({
-    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
-    typeName: 'S7CommPlusDriverWrapper.DriverManager',
-    methodName: 'GetTag'
-});
-
-var Disconnect = edge.func({
-    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
-    typeName: 'S7CommPlusDriverWrapper.DriverManager',
-    methodName: 'Disconnect'
-});
-
-
-const connParams = {
-    ipAddress: "192.168.18.25",
-    password: "", 
-    timeout: 5000
-}
-Connect(connParams, (error, result) => {
-    console.log("Establishing connection to PLC");
-    if (error) {
-        console.log("Error connecting to PLC: ", error);
-        return;
-    }
-    console.log(result);
-});
-
-console.log("\n====================================\n");
-
-GetDataBlockInfoList(null, (error, result) => {
-    if (error) {
-        console.log("Error connecting to PLC: ", error);
-        return;
-    }
-    console.log(result);
-});
-
-
-console.log("\n====================================\n");
-
-GetPObject_atDBInfoListIndex({index: 1}, (error, result) => {
-    if (error) {
-        console.log("Error connecting to PLC: ", error);
-        return;
-    }
-    console.log(result); 
-});
-
-console.log("\n====================================\n");
-
-GetDataBlockVariables_atDBInfoListIndex({index: 1}, (error, result) => {
-    if (error) {
-        console.log("Error: ", error);
-        return;
-    }
-    console.log(result);
-});
-
-console.log("\n====================================\n");
-
-GetDataBlockNamesandVariables(null, (error, result) => {
-    if (error) {
-        console.log("Error: ", error);
-        return;
-    }
-    console.log(result);
-});
-
-console.log("\n====================================\n");
-
-
-
-console.log("\n====================================\n");
-
-console.log("Disconnecting from PLC");
-Disconnect(null, (disconnectError, disconnectResult) => {
-    if (disconnectError) {
-        console.error('Error disconnecting from PLC:', disconnectError);
-    } else {
-        console.log(disconnectResult);
-    }
-});*/
