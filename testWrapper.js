@@ -11,6 +11,18 @@ let plcConns = new Map();
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 var Connect_ = edge.func({
     assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
     typeName: 'S7CommPlusDriverWrapper.DriverManager',
@@ -93,6 +105,18 @@ const MultiConnect = (connParamArray) => {
         });
     });
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -189,6 +213,18 @@ const MultiDisconnect = (ipArray) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 var GetDataBlockInfoList_ = edge.func({
     assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
     typeName: 'S7CommPlusDriverWrapper.DriverManager',
@@ -238,6 +274,10 @@ const GetDataBlockInfoList = (ipAddress) => {
         });
     });
 };
+
+
+
+
 
 
 
@@ -429,17 +469,12 @@ const ProbeDataBlock = (ipAddress, dataBlockName) => {
 
 
 
-
-
-
-
-
 var ReadTags_ = edge.func({
     assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
     typeName: 'S7CommPlusDriverWrapper.DriverManager',
     methodName: 'ReadTags'
 });
-const ReadTags = (ipAddress, tagSymbols) => {
+const ReadTags = (ipAddress, tagReadProfiles) => {
     return new Promise((resolve,reject) => {
 
         // check for IP
@@ -455,7 +490,7 @@ const ReadTags = (ipAddress, tagSymbols) => {
         // init input object
         let input = {
             sessionID2: sessionID2,
-            tagSymbols: tagSymbols
+            tagReadProfiles: tagReadProfiles
         }
         ReadTags_(input, (error, output) => {
             if (error) {
@@ -520,6 +555,11 @@ const PollTags = (ipAddress, tagSymbols, interval_t = 1000) => {
 
 
 
+
+
+
+
+
 var WriteTags_ = edge.func({
     assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
     typeName: 'S7CommPlusDriverWrapper.DriverManager',
@@ -530,28 +570,6 @@ const WriteTags = (ipAddress, tagSymbols) => {
 
     });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -610,29 +628,38 @@ async function main() {
         console.log(MultiConnRes);
         console.log("\n====================================\n");
 
-        /*console.log("\n=== Testing GetDataBlockPlcTags ===\n");
+        console.log("\n=== Testing GetDataBlockPlcTags ===\n");
         console.log("getting PlcTags of: " + targetDatablockName1 + "\n\tin PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
         PlcTagListRes = await GetDataBlockPlcTags(targetPlcIPs_connect[1].ipAddress, targetDatablockName1);
         console.log("Successfully retrieved PlcTags from Datablock: " + targetDatablockName1 + " in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
-        console.log("\n====================================\n");*/
+        console.log("\n====================================\n");
 
-        /*console.log("\n=== Testing SaveDataBlockPlcTags ===\n");
+        console.log("\n=== Testing SaveDataBlockPlcTags ===\n");
         console.log("saving PlcTag object list retrieved from " + targetDatablockName1 + "\n\tin PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
         PlcTagDbRes = await SaveDataBlockPlcTags(targetPlcIPs_connect[1].ipAddress, PlcTagListRes, targetDatablockName1);
         console.log("Successfully saved PlcTags retrieved from Datablock: " + targetDatablockName1 + 
             " in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress + " to LokiDB: " +PlcTagDbRes);
         console.log("\n====================================\n");
 
+        //ORIGINAL VERSION USING DYNAMICALLY GENERATED DATABASE FILENAME
         console.log("\n=== Testing QueryLokiDB_GetPlcTagsByName ===\n");
-        console.log("getting Plc tags with names: \n")
+        console.log("getting Plc Tag profiles with names: \n")
         for (let i = 0; i < targetTagSymbols1.length; i++) {
             console.log(targetTagSymbols1[i] + "\n");
         }
         console.log("from collection " + targetDatablockName1 + " in PlcTag database " + targetLokiDB1);
         PlcTagQueryResults = await QueryLokiDB_GetPlcTagsByNames(PlcTagDbRes, targetDatablockName1, targetTagSymbols1);
-        console.log("Successfully queried LokiDB: " + PlcTagDbRes + " and retrieved values: " + JSON.stringify(PlcTagQueryResults,null,2));
-        console.log("\n====================================\n");*/
+        console.log("Successfully queried LokiDB: " + PlcTagDbRes + " and retrieved Plc Tag profiles: " + JSON.stringify(PlcTagQueryResults,null,2));
+        console.log("\n====================================\n");
 
+        console.log("\n=== Testing ReadTags ===\n");
+        console.log("Attempting to read Plc Tags with profiles: \n" + PlcTagQueryResults);
+        PlcTagReadResults = await ReadTags(targetPlcIPs_connect[1].ipAddress, PlcTagQueryResults);
+        console.log(PlcTagReadResults);
+        console.log("\n====================================\n");
+
+        /*
+        //ALT VERSION USING HARD CODED DATABASE FILENAME
         console.log("\n=== Testing QueryLokiDB_GetPlcTagsByName ===\n");
         console.log("getting Plc tags with names: \n")
         for (let i = 0; i < targetTagSymbols1.length; i++) {
@@ -642,6 +669,7 @@ async function main() {
         PlcTagQueryResults = await QueryLokiDB_GetPlcTagsByNames(targetLokiDB1, targetDatablockName1, targetTagSymbols1);
         console.log("Successfully queried LokiDB: " + targetLokiDB1 + " and retrieved values: " + JSON.stringify(PlcTagQueryResults,null,2));
         console.log("\n====================================\n");
+        */
 
         console.log("\n=== Testing Multiple PLC Disconnecting ===\n");
         console.log("Disconnecting from PLC's @ IPs: \n");

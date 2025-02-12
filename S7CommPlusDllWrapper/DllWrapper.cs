@@ -716,11 +716,11 @@ namespace S7CommPlusDriverWrapper
                     (
                         tagName: (string)trp.Name,
                         tagAddress: new ItemAddress {
-                            SymbolCrc = Convert.ToUInt32(trp.address.SymbolCrc ?? 0),
-                            AccessArea = Convert.ToUInt32(trp.address.AccessArea ?? 0),
-                            AccessSubArea = Convert.ToUInt32(trp.address.AccessSubArea ?? 0),
-                            LID = trp.address.LID != null 
-                                ? ((IEnumerable<object>)trp.address.LID).Select(obj => Convert.ToUInt32(obj)).ToList() 
+                            SymbolCrc = Convert.ToUInt32(trp.Address.SymbolCrc ?? 0),
+                            AccessArea = Convert.ToUInt32(trp.Address.AccessArea ?? 0),
+                            AccessSubArea = Convert.ToUInt32(trp.Address.AccessSubArea ?? 0),
+                            LID = trp.Address.LID != null 
+                                ? ((IEnumerable<object>)trp.Address.LID).Select(obj => Convert.ToUInt32(obj)).ToList() 
                                 : new List<UInt32>()
                         },
                         tagDataType: Convert.ToUInt32(trp.Datatype ?? 0)
