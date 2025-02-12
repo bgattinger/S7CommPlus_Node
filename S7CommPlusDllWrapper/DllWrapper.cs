@@ -709,7 +709,24 @@ namespace S7CommPlusDriverWrapper
 
             // parse input
             UInt32 targetConnSessID = (UInt32)input.sessionID2;
-            string[] tagSymbols = ((IEnumerable<object>)input.tagSymbols).Cast<string>().ToArray();
+            List<(string tagName, ItemAddress tagAddress, UInt32 tagDataType)>
+                targetTagReadProfiles = new List<(string tagName, ItemAddress tagAddress, uint tagDataType)>();
+            foreach (var trp in input.tagReadProfiles) {
+                targetTagReadProfiles.Add(
+                    (
+                        tagName: (string)trp.Name,
+                        tagAddress: new ItemAddress {
+                            SymbolCrc = Convert.ToUInt32(trp.address.SymbolCrc ?? 0),
+                            AccessArea = Convert.ToUInt32(trp.address.AccessArea ?? 0),
+                            AccessSubArea = Convert.ToUInt32(trp.address.AccessSubArea ?? 0),
+                            LID = trp.address.LID != null 
+                                ? ((IEnumerable<object>)trp.address.LID).Select(obj => Convert.ToUInt32(obj)).ToList() 
+                                : new List<UInt32>()
+                        },
+                        tagDataType: Convert.ToUInt32(trp.Datatype ?? 0)
+                    )
+                );
+            }
 
             // init output object (initialize to unsuccseful read values)
             var output = (
@@ -718,22 +735,23 @@ namespace S7CommPlusDriverWrapper
             );
 
             PlcTags tagsToRead = new PlcTags();
-            if (plcConns.ContainsKey(targetConnSessID)) {
-
-                // load the tag symbols into PlcTag objects to be read
-                foreach (string tagSymbol in tagSymbols) {
-                    // create tag ojbect
-                    PlcTag tag = plcConns[targetConnSessID].getPlcTagBySymbol(tagSymbol);
-                    
-                    if (tag != null) {
-                        output.readTags.Add(tag);
-                        tagsToRead.AddTag(output.readTags[output.readTags.Count()-1]);
-                    }   
-                }
-
-                // read tag values into PLC tag objects
-                output.accessRes = await Task.Run(() => tagsToRead.ReadTags(plcConns[targetConnSessID]));
+            if (!plcConns.ContainsKey(targetConnSessID)) {
+                return output;
+            } // else 
+            
+            // load the tag symbols into PlcTag objects to be read
+            foreach (var (tagName, tagAddress, tagDataType) in targetTagReadProfiles) {
+                // create tag ojbect
+                PlcTag tag = CreateTag(tagName, tagAddress, tagDataType);
+                
+                if (tag != null) {
+                    output.readTags.Add(tag);
+                    tagsToRead.AddTag(output.readTags[output.readTags.Count()-1]);
+                }   
             }
+
+            // read tag values into PLC tag objects
+            output.accessRes = await Task.Run(() => tagsToRead.ReadTags(plcConns[targetConnSessID]));
 
             // return tag objects populated with read values
             return output;
@@ -746,13 +764,8 @@ namespace S7CommPlusDriverWrapper
             // parse input
             UInt32 targetConnSessID = Convert.ToUInt32(input.sessionID2 ?? 0);
             List<(string tagName, ItemAddress tagAddress, UInt32 tagDataType, object tagWriteValue)> 
-                targetTagWriteProfiles = new List<(
-                    string tagName, 
-                    ItemAddress tagAddress, 
-                    uint tagDataType,
-                    object tagWriteValue
-                )>();
-            foreach (var twp in input.tagProfiles ) {
+                targetTagWriteProfiles = new List<(string tagName, ItemAddress tagAddress, uint tagDataType, object tagWriteValue)>();
+            foreach (var twp in input.tagWriteProfiles ) {
                 targetTagWriteProfiles.Add(
                     (
                         tagName: (string)twp.Name,
