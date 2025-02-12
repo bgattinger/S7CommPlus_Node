@@ -111,49 +111,50 @@ namespace S7CommPlusDriverWrapper
             throw new ArgumentException($"unknown dataType: {dataType}");
         }
 
-        private static Dictionary<Type, PropertyInfo> PlcTagValueProperties = 
-            new Dictionary<Type, PropertyInfo>
+        private static Dictionary<UInt32, PropertyInfo> PlcTagValueProperties = 
+            new Dictionary<UInt32, PropertyInfo>
             {
-                { typeof(PlcTagBool), typeof(PlcTagBool).GetProperty("Value")},
-                { typeof(PlcTagByte), typeof(PlcTagByte).GetProperty("Value")},
-                { typeof(PlcTagChar), typeof(PlcTagChar).GetProperty("Value")},
-                { typeof(PlcTagWord), typeof(PlcTagWord).GetProperty("Value")},
-                { typeof(PlcTagInt), typeof(PlcTagInt).GetProperty("Value")},
-                { typeof(PlcTagDWord), typeof(PlcTagDWord).GetProperty("Value")},
-                { typeof(PlcTagDInt), typeof(PlcTagDInt).GetProperty("Value")},
-                { typeof(PlcTagReal), typeof(PlcTagReal).GetProperty("Value")},
-                { typeof(PlcTagDate), typeof(PlcTagDate).GetProperty("Value")},
-                { typeof(PlcTagTimeOfDay), typeof(PlcTagTimeOfDay).GetProperty("Value")},
-                { typeof(PlcTagTime), typeof(PlcTagTime).GetProperty("Value")},
-                { typeof(PlcTagS5Time), typeof(PlcTagS5Time).GetProperty("Value")},
-                { typeof(PlcTagDateAndTime), typeof(PlcTagDateAndTime).GetProperty("Value")},
-                { typeof(PlcTagString), typeof(PlcTagString).GetProperty("Value")},
-                { typeof(PlcTagPointer), typeof(PlcTagPointer).GetProperty("Value")},
-                { typeof(PlcTagAny), typeof(PlcTagAny).GetProperty("Value")},
-                { typeof(PlcTagLReal), typeof(PlcTagLReal).GetProperty("Value")},
-                { typeof(PlcTagULInt), typeof(PlcTagULInt).GetProperty("Value")},
-                { typeof(PlcTagLInt), typeof(PlcTagLInt).GetProperty("Value")},
-                { typeof(PlcTagLWord), typeof(PlcTagLWord).GetProperty("Value")},
-                { typeof(PlcTagUSInt), typeof(PlcTagUSInt).GetProperty("Value")},
-                { typeof(PlcTagUInt), typeof(PlcTagUInt).GetProperty("Value")},
-                { typeof(PlcTagUDInt), typeof(PlcTagUDInt).GetProperty("Value")},
-                { typeof(PlcTagSInt), typeof(PlcTagSInt).GetProperty("Value")},
-                { typeof(PlcTagWChar), typeof(PlcTagWChar).GetProperty("Value")},
-                { typeof(PlcTagWString), typeof(PlcTagWString).GetProperty("Value")},
-                { typeof(PlcTagLTime), typeof(PlcTagLTime).GetProperty("Value")},
-                { typeof(PlcTagLTOD), typeof(PlcTagLTOD).GetProperty("Value")},
-                { typeof(PlcTagLDT), typeof(PlcTagLDT).GetProperty("Value")},
-                { typeof(PlcTagDTL), typeof(PlcTagDTL).GetProperty("Value")},
+                { 1, typeof(PlcTagBool).GetProperty("Value") },
+                { 2, typeof(PlcTagByte).GetProperty("Value") },
+                { 3, typeof(PlcTagChar).GetProperty("Value") },
+                { 4, typeof(PlcTagWord).GetProperty("Value") },
+                { 5, typeof(PlcTagInt).GetProperty("Value") },
+                { 6, typeof(PlcTagDWord).GetProperty("Value") },
+                { 7, typeof(PlcTagDInt).GetProperty("Value") },
+                { 8, typeof(PlcTagReal).GetProperty("Value") },
+                { 9, typeof(PlcTagDate).GetProperty("Value") },
+                { 10, typeof(PlcTagTimeOfDay).GetProperty("Value") },
+                { 11, typeof(PlcTagTime).GetProperty("Value") },
+                { 12, typeof(PlcTagS5Time).GetProperty("Value") },
+                { 14, typeof(PlcTagDateAndTime).GetProperty("Value") },
+                { 19, typeof(PlcTagString).GetProperty("Value") },
+                { 20, typeof(PlcTagPointer).GetProperty("Value") },
+                { 22, typeof(PlcTagAny).GetProperty("Value") },
+                { 48, typeof(PlcTagLReal).GetProperty("Value") },
+                { 49, typeof(PlcTagULInt).GetProperty("Value") },
+                { 50, typeof(PlcTagLInt).GetProperty("Value") },
+                { 51, typeof(PlcTagLWord).GetProperty("Value") },
+                { 52, typeof(PlcTagUSInt).GetProperty("Value") },
+                { 53, typeof(PlcTagUInt).GetProperty("Value") },
+                { 54, typeof(PlcTagUDInt).GetProperty("Value") },
+                { 55, typeof(PlcTagSInt).GetProperty("Value") },
+                { 61, typeof(PlcTagWChar).GetProperty("Value") },
+                { 62, typeof(PlcTagWString).GetProperty("Value") },
+                { 64, typeof(PlcTagLTime).GetProperty("Value") },
+                { 65, typeof(PlcTagLTOD).GetProperty("Value") },
+                { 66, typeof(PlcTagLDT).GetProperty("Value") },
+                { 67, typeof(PlcTagDTL).GetProperty("Value") },
             };
             private static object GetValue(PlcTag tag) {
-                if (PlcTagValueProperties.TryGetValue(tag.GetType(), out var valProp)) {
+                if (PlcTagValueProperties.TryGetValue(tag.Datatype, out var valProp)) {
                     return valProp.GetValue(tag);
                 } // else
                 throw new ArgumentException($"Unknown PlcTag type: {tag.GetType()}");
             }
             private static void SetValue(PlcTag tag, object newVal) {
-                if (PlcTagValueProperties.TryGetValue(tag.GetType(), out var valProp)) {
+                if (PlcTagValueProperties.TryGetValue(tag.Datatype, out var valProp)) {
                     valProp.SetValue(tag, newVal);
+                    return;
                 } // else
                 throw new ArgumentException($"Unknown PlcTag type: {tag.GetType()}");
             }
@@ -730,7 +731,7 @@ namespace S7CommPlusDriverWrapper
 
             // init output object (initialize to unsuccseful read values)
             var output = (
-                accessRes: (int)-1, 
+                readRes: (int)-1, 
                 readTags: new List<PlcTag>()
             );
 
@@ -751,7 +752,7 @@ namespace S7CommPlusDriverWrapper
             }
 
             // read tag values into PLC tag objects
-            output.accessRes = await Task.Run(() => tagsToRead.ReadTags(plcConns[targetConnSessID]));
+            output.readRes = await Task.Run(() => tagsToRead.ReadTags(plcConns[targetConnSessID]));
 
             // return tag objects populated with read values
             return output;
@@ -770,15 +771,15 @@ namespace S7CommPlusDriverWrapper
                     (
                         tagName: (string)twp.Name,
                         tagAddress: new ItemAddress {
-                            SymbolCrc = Convert.ToUInt32(twp.address.SymbolCrc ?? 0),
-                            AccessArea = Convert.ToUInt32(twp.address.AccessArea ?? 0),
-                            AccessSubArea = Convert.ToUInt32(twp.address.AccessSubArea ?? 0),
-                            LID = twp.address.LID != null 
-                                ? ((IEnumerable<object>)twp.address.LID).Select(obj => Convert.ToUInt32(obj)).ToList() 
+                            SymbolCrc = Convert.ToUInt32(twp.Address.SymbolCrc ?? 0),
+                            AccessArea = Convert.ToUInt32(twp.Address.AccessArea ?? 0),
+                            AccessSubArea = Convert.ToUInt32(twp.Address.AccessSubArea ?? 0),
+                            LID = twp.Address.LID != null 
+                                ? ((IEnumerable<object>)twp.Address.LID).Select(obj => Convert.ToUInt32(obj)).ToList() 
                                 : new List<UInt32>()
                         },
                         tagDataType: Convert.ToUInt32(twp.Datatype ?? 0),
-                        tagWriteValue: dataConversionDict[Convert.ToUInt32(twp.Datatype ?? 0)](twp.tagDataType)
+                        tagWriteValue: dataConversionDict[Convert.ToUInt32(twp.Datatype ?? 0)](twp.writeValue)
                     )
                 );
             }

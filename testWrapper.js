@@ -565,9 +565,49 @@ var WriteTags_ = edge.func({
     typeName: 'S7CommPlusDriverWrapper.DriverManager',
     methodName: 'WriteTags'
 });
-const WriteTags = (ipAddress, tagSymbols) => {
+const WriteTags = (ipAddress, tagWriteProfiles) => {
     return new Promise((resolve,reject) => {
 
+        // check for IP
+        if ( !(plcConns.has(ipAddress)) ) {
+            reject(new Error(
+                "no such PLC connection @ IP: " + ipAddress + " exists"
+            ));
+            return;
+        } // else
+        // retrieve corresponding sessionID for IP
+        let sessionID2 = plcConns.get(ipAddress);
+
+        // init input object
+        let input = {
+            sessionID2: sessionID2,
+            tagWriteProfiles: tagWriteProfiles
+        }
+        WriteTags_(input, (error, output) => {
+            if (error) {
+                reject(error);
+                return;
+            } // else 
+            // WriteTags executed successfully
+
+            // parse output object
+            let writeRes = output.Item1;
+            let writtenTags = output.Item2;
+
+            if (writeRes != 0) {
+                // writing Tag values was unsuccessful
+                reject(new Error(
+                    "unable to retrieve Tag values from PLC @ IP: " + ipAddress + " (access code: " + accessRes + ")"
+                ));
+                return;
+            } // else
+            // Writing tag values was successful
+    
+            resolve({
+                ipAddress: ipAddress,
+                writtenTags: writtenTags
+            });
+        });
     });
 }
 
@@ -610,6 +650,7 @@ async function main() {
     targetLokiDB1 = "PlcTagDB_192.168.18.26.json";
 
     const targetTagSymbols1 = ["Test.bool", "Test.Int", "Test.Dint", "Test.Real", "Test.Lreal"]; 
+    const targetTagSymbols2 = ["Test.Mytype.bool", "Test.Mytype.real", "Test.Mytype.int"]
 
     targetPlcIPs_disconnect = [
         "192.168.18.25",
@@ -641,22 +682,46 @@ async function main() {
             " in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress + " to LokiDB: " +PlcTagDbRes);
         console.log("\n====================================\n");
 
-        //ORIGINAL VERSION USING DYNAMICALLY GENERATED DATABASE FILENAME
         console.log("\n=== Testing QueryLokiDB_GetPlcTagsByName ===\n");
         console.log("getting Plc Tag profiles with names: \n")
-        for (let i = 0; i < targetTagSymbols1.length; i++) {
-            console.log(targetTagSymbols1[i] + "\n");
+        for (let i = 0; i < targetTagSymbols2.length; i++) {
+            console.log(targetTagSymbols2[i] + "\n");
         }
         console.log("from collection " + targetDatablockName1 + " in PlcTag database " + targetLokiDB1);
-        PlcTagQueryResults = await QueryLokiDB_GetPlcTagsByNames(PlcTagDbRes, targetDatablockName1, targetTagSymbols1);
-        console.log("Successfully queried LokiDB: " + PlcTagDbRes + " and retrieved Plc Tag profiles: " + JSON.stringify(PlcTagQueryResults,null,2));
+        PlcTagReadProfiles = await QueryLokiDB_GetPlcTagsByNames(PlcTagDbRes, targetDatablockName1, targetTagSymbols2);
+        console.log("Successfully queried LokiDB: " + PlcTagDbRes + " and retrieved Plc Tag profiles: " + JSON.stringify(PlcTagReadProfiles,null,2));
         console.log("\n====================================\n");
 
         console.log("\n=== Testing ReadTags ===\n");
-        console.log("Attempting to read Plc Tags with profiles: \n" + PlcTagQueryResults);
-        PlcTagReadResults = await ReadTags(targetPlcIPs_connect[1].ipAddress, PlcTagQueryResults);
-        console.log(PlcTagReadResults);
+        console.log("Attempting to read from Plc Tags with read profiles: \n" + JSON.stringify(PlcTagReadProfiles,null,2));
+        PlcTagReadResults = await ReadTags(targetPlcIPs_connect[1].ipAddress, PlcTagReadProfiles);
+        console.log("Successfully read from Plc Tags in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
+        console.log("Plc Tag read results: \n " + JSON.stringify(PlcTagReadResults,null,2));
         console.log("\n====================================\n");
+
+        console.log("\n=== Testing WriteTags ===\n");
+        let PlcTagWriteProfiles = PlcTagReadProfiles.map(tag => {
+            let writeValue;
+            if (tag.Datatype === 1) {
+                writeValue = true;  // Boolean value
+            } else if (tag.Datatype === 5) {
+                writeValue = 100;  // Number 1
+            } else if (tag.Datatype === 8){
+                writeValue = 88.9;  // Number 2
+            } else {
+                writeValue = 0;
+            }
+            return {
+                ...tag,
+                writeValue
+            };
+        });
+        console.log("Attempting to write to Plc Tags with write profiles: \n" + JSON.stringify(PlcTagWriteProfiles, null, 2));
+        PlcTagWriteResults = await WriteTags(targetPlcIPs_connect[1].ipAddress, PlcTagWriteProfiles);
+        console.log("Successfully wrote to Plc Tags in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
+        console.log("Plc Tag write results: \n " + JSON.stringify(PlcTagWriteResults,null,2));
+        console.log("\n====================================\n");
+
 
         /*
         //ALT VERSION USING HARD CODED DATABASE FILENAME
