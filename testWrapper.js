@@ -610,13 +610,13 @@ async function main() {
         console.log(MultiConnRes);
         console.log("\n====================================\n");
 
-        console.log("\n=== Testing GetDataBlockPlcTags ===\n");
+        /*console.log("\n=== Testing GetDataBlockPlcTags ===\n");
         console.log("getting PlcTags of: " + targetDatablockName1 + "\n\tin PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
         PlcTagListRes = await GetDataBlockPlcTags(targetPlcIPs_connect[1].ipAddress, targetDatablockName1);
         console.log("Successfully retrieved PlcTags from Datablock: " + targetDatablockName1 + " in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
-        console.log("\n====================================\n");
+        console.log("\n====================================\n");*/
 
-        console.log("\n=== Testing SaveDataBlockPlcTags ===\n");
+        /*console.log("\n=== Testing SaveDataBlockPlcTags ===\n");
         console.log("saving PlcTag object list retrieved from " + targetDatablockName1 + "\n\tin PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
         PlcTagDbRes = await SaveDataBlockPlcTags(targetPlcIPs_connect[1].ipAddress, PlcTagListRes, targetDatablockName1);
         console.log("Successfully saved PlcTags retrieved from Datablock: " + targetDatablockName1 + 
@@ -631,6 +631,16 @@ async function main() {
         console.log("from collection " + targetDatablockName1 + " in PlcTag database " + targetLokiDB1);
         PlcTagQueryResults = await QueryLokiDB_GetPlcTagsByNames(PlcTagDbRes, targetDatablockName1, targetTagSymbols1);
         console.log("Successfully queried LokiDB: " + PlcTagDbRes + " and retrieved values: " + JSON.stringify(PlcTagQueryResults,null,2));
+        console.log("\n====================================\n");*/
+
+        console.log("\n=== Testing QueryLokiDB_GetPlcTagsByName ===\n");
+        console.log("getting Plc tags with names: \n")
+        for (let i = 0; i < targetTagSymbols1.length; i++) {
+            console.log(targetTagSymbols1[i] + "\n");
+        }
+        console.log("from collection " + targetDatablockName1 + " in PlcTag database " + targetLokiDB1);
+        PlcTagQueryResults = await QueryLokiDB_GetPlcTagsByNames(targetLokiDB1, targetDatablockName1, targetTagSymbols1);
+        console.log("Successfully queried LokiDB: " + targetLokiDB1 + " and retrieved values: " + JSON.stringify(PlcTagQueryResults,null,2));
         console.log("\n====================================\n");
 
         console.log("\n=== Testing Multiple PLC Disconnecting ===\n");

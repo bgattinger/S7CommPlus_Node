@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
 using System.Net.Mime;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Remoting.Messaging;
 using System.Security;
 using System.Threading.Tasks;
@@ -17,10 +19,157 @@ namespace S7CommPlusDriverWrapper
 
     public class DriverManager
     {
-        //private static S7CommPlusConnection conn = null;
-        //private static List<S7CommPlusConnection.DatablockInfo> dbInfoList = null;
-
         private static Dictionary<UInt32, S7CommPlusConnection> plcConns = new Dictionary<uint, S7CommPlusConnection>();
+        private static Dictionary<UInt32, Delegate> dataConversionDict = new Dictionary<uint, Delegate>
+        {
+            { 1, new Func<object,bool>(input => Convert.ToBoolean(input)) },
+            { 2, new Func<object,byte>(input => Convert.ToByte(input)) },
+            { 3, new Func<object,char>(input => Convert.ToChar(input)) },
+            { 4, new Func<object,UInt16>(input => Convert.ToUInt16(input)) },
+            { 5, new Func<object,Int16>(input => Convert.ToInt16(input)) },
+            { 6, new Func<object,UInt32>(input => Convert.ToUInt32(input)) },
+            { 7, new Func<object,Int32>((input) => Convert.ToInt32(input)) },
+            { 8, new Func<object,Single>((input) => Convert.ToSingle(input)) },
+            { 9, new Func<object,DateTime>((input) => Convert.ToDateTime(input)) },
+            { 10, new Func<object,UInt32>(input => Convert.ToUInt32(input)) },
+            { 11, new Func<object,Int32>(input => Convert.ToInt32(input)) },
+            { 12, new Func<object,UInt16>(input => Convert.ToUInt16(input)) },
+            { 14, new Func<object,DateTime>(input => Convert.ToDateTime(input)) },
+            { 19, new Func<object,String>(input => Convert.ToString(input)) },
+            { 20, new Func<object,byte[]>(input => {
+                if (input is String str) {
+                    return System.Text.Encoding.UTF8.GetBytes(str);
+                } else if (input is byte[] byteArray) {
+                    return byteArray;
+                } else {
+                    throw new InvalidCastException("Input cannot be converted to byte array");
+                }
+            })},
+            { 22, new Func<object,byte[]>(input => {
+                if (input is String str) {
+                    return System.Text.Encoding.UTF8.GetBytes(str);
+                } else if (input is byte[] byteArray) {
+                    return byteArray;
+                } else {
+                    throw new InvalidCastException("Input cannot be converted to byte array");
+                }
+            })},
+            { 48, new Func<object,double>(input => Convert.ToDouble(input)) },
+            { 49, new Func<object,UInt64>(input => Convert.ToUInt64(input)) },
+            { 50, new Func<object,Int64>(input => Convert.ToInt64(input)) },
+            { 51, new Func<object,UInt64>(input => Convert.ToUInt64(input)) },
+            { 52, new Func<object,SByte>(input => Convert.ToSByte(input)) },
+            { 53, new Func<object,UInt16>(input => Convert.ToUInt16(input)) },
+            { 54, new Func<object,UInt32>(input => Convert.ToUInt32(input)) },
+            { 55, new Func<object,SByte>(input => Convert.ToSByte(input)) },
+            { 61, new Func<object,char>(input => Convert.ToChar(input)) },
+            { 62, new Func<object,string>(input => Convert.ToString(input)) },
+            { 64, new Func<object,Int64>(input => Convert.ToInt64(input)) },
+            { 65, new Func<object,UInt64>(input => Convert.ToUInt64(input)) },
+            { 66, new Func<object,UInt64>(input => Convert.ToUInt64(input)) },
+            { 67, new Func<object,DateTime>(input => Convert.ToDateTime(input)) },
+        };
+
+        private static Dictionary<UInt32, Func<string, ItemAddress, UInt32, PlcTag>> PlcTagConstructors = 
+            new Dictionary<uint, Func<string, ItemAddress, uint, PlcTag>>
+            {
+                { 1, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagBool), name, address, dataType) },
+                { 2, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagByte), name, address, dataType) },
+                { 3, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagChar), name, address, dataType) },
+                { 4, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagWord), name, address, dataType) },
+                { 5, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagInt), name, address, dataType) },
+                { 6, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagDWord), name, address, dataType) },
+                { 7, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagDInt), name, address, dataType) },
+                { 8, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagReal), name, address, dataType) },
+                { 9, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagDate), name, address, dataType) },
+                { 10, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagTimeOfDay), name, address, dataType) },
+                { 11, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagTime), name, address, dataType) },
+                { 12, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagS5Time), name, address, dataType) },
+                { 14, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagDateAndTime), name, address, dataType) },
+                { 19, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagString), name, address, dataType) },
+                { 20, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagPointer), name, address, dataType) },
+                { 22, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagAny), name, address, dataType) },
+                { 48, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagLReal), name, address, dataType) },
+                { 49, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagULInt), name, address, dataType) },
+                { 50, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagLInt), name, address, dataType) },
+                { 51, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagLWord), name, address, dataType) },
+                { 52, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagUSInt), name, address, dataType) },
+                { 53, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagUInt), name, address, dataType) },
+                { 54, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagUDInt), name, address, dataType) },
+                { 55, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagSInt), name, address, dataType) },
+                { 61, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagWChar), name, address, dataType) },
+                { 62, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagWString), name, address, dataType) },
+                { 64, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagLTime), name, address, dataType) },
+                { 65, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagLTOD), name, address, dataType) },
+                { 66, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagLDT), name, address, dataType) },
+                { 67, (name, address, dataType) => (PlcTag)Activator.CreateInstance(typeof(PlcTagDTL), name, address, dataType) },
+            };
+        private static PlcTag CreateTag(string name, ItemAddress address, UInt32 dataType) {
+            if (PlcTagConstructors.TryGetValue(dataType, out var constructor)) {
+                return constructor(name,address,dataType);
+            } // else
+            throw new ArgumentException($"unknown dataType: {dataType}");
+        }
+
+        private static Dictionary<Type, PropertyInfo> PlcTagValueProperties = 
+            new Dictionary<Type, PropertyInfo>
+            {
+                { typeof(PlcTagBool), typeof(PlcTagBool).GetProperty("Value")},
+                { typeof(PlcTagByte), typeof(PlcTagByte).GetProperty("Value")},
+                { typeof(PlcTagChar), typeof(PlcTagChar).GetProperty("Value")},
+                { typeof(PlcTagWord), typeof(PlcTagWord).GetProperty("Value")},
+                { typeof(PlcTagInt), typeof(PlcTagInt).GetProperty("Value")},
+                { typeof(PlcTagDWord), typeof(PlcTagDWord).GetProperty("Value")},
+                { typeof(PlcTagDInt), typeof(PlcTagDInt).GetProperty("Value")},
+                { typeof(PlcTagReal), typeof(PlcTagReal).GetProperty("Value")},
+                { typeof(PlcTagDate), typeof(PlcTagDate).GetProperty("Value")},
+                { typeof(PlcTagTimeOfDay), typeof(PlcTagTimeOfDay).GetProperty("Value")},
+                { typeof(PlcTagTime), typeof(PlcTagTime).GetProperty("Value")},
+                { typeof(PlcTagS5Time), typeof(PlcTagS5Time).GetProperty("Value")},
+                { typeof(PlcTagDateAndTime), typeof(PlcTagDateAndTime).GetProperty("Value")},
+                { typeof(PlcTagString), typeof(PlcTagString).GetProperty("Value")},
+                { typeof(PlcTagPointer), typeof(PlcTagPointer).GetProperty("Value")},
+                { typeof(PlcTagAny), typeof(PlcTagAny).GetProperty("Value")},
+                { typeof(PlcTagLReal), typeof(PlcTagLReal).GetProperty("Value")},
+                { typeof(PlcTagULInt), typeof(PlcTagULInt).GetProperty("Value")},
+                { typeof(PlcTagLInt), typeof(PlcTagLInt).GetProperty("Value")},
+                { typeof(PlcTagLWord), typeof(PlcTagLWord).GetProperty("Value")},
+                { typeof(PlcTagUSInt), typeof(PlcTagUSInt).GetProperty("Value")},
+                { typeof(PlcTagUInt), typeof(PlcTagUInt).GetProperty("Value")},
+                { typeof(PlcTagUDInt), typeof(PlcTagUDInt).GetProperty("Value")},
+                { typeof(PlcTagSInt), typeof(PlcTagSInt).GetProperty("Value")},
+                { typeof(PlcTagWChar), typeof(PlcTagWChar).GetProperty("Value")},
+                { typeof(PlcTagWString), typeof(PlcTagWString).GetProperty("Value")},
+                { typeof(PlcTagLTime), typeof(PlcTagLTime).GetProperty("Value")},
+                { typeof(PlcTagLTOD), typeof(PlcTagLTOD).GetProperty("Value")},
+                { typeof(PlcTagLDT), typeof(PlcTagLDT).GetProperty("Value")},
+                { typeof(PlcTagDTL), typeof(PlcTagDTL).GetProperty("Value")},
+            };
+            private static object GetValue(PlcTag tag) {
+                if (PlcTagValueProperties.TryGetValue(tag.GetType(), out var valProp)) {
+                    return valProp.GetValue(tag);
+                } // else
+                throw new ArgumentException($"Unknown PlcTag type: {tag.GetType()}");
+            }
+            private static void SetValue(PlcTag tag, object newVal) {
+                if (PlcTagValueProperties.TryGetValue(tag.GetType(), out var valProp)) {
+                    valProp.SetValue(tag, newVal);
+                } // else
+                throw new ArgumentException($"Unknown PlcTag type: {tag.GetType()}");
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         public async Task<object> Connect(dynamic input) {
             // parse input object
@@ -596,28 +745,27 @@ namespace S7CommPlusDriverWrapper
 
             // parse input
             UInt32 targetConnSessID = Convert.ToUInt32(input.sessionID2 ?? 0);
-            List<(
-                string tagName, 
-                ItemAddress tagAddress, 
-                UInt32 tagDataType
-            )> targetTagProfiles = new List<(
-                string tagName, 
-                ItemAddress tagAddress, 
-                uint tagDataType
-            )>();
-            foreach (var tp in input.tagProfiles ) {
-                targetTagProfiles.Add(
+            List<(string tagName, ItemAddress tagAddress, UInt32 tagDataType, object tagWriteValue)> 
+                targetTagWriteProfiles = new List<(
+                    string tagName, 
+                    ItemAddress tagAddress, 
+                    uint tagDataType,
+                    object tagWriteValue
+                )>();
+            foreach (var twp in input.tagProfiles ) {
+                targetTagWriteProfiles.Add(
                     (
-                        tagName: (string)tp.Name,
+                        tagName: (string)twp.Name,
                         tagAddress: new ItemAddress {
-                            SymbolCrc = Convert.ToUInt32(tp.address.SymbolCrc ?? 0),
-                            AccessArea = Convert.ToUInt32(tp.address.AccessArea ?? 0),
-                            AccessSubArea = Convert.ToUInt32(tp.address.AccessSubArea ?? 0),
-                            LID = tp.address.LID != null 
-                                ? ((IEnumerable<object>)tp.address.LID).Select(obj => Convert.ToUInt32(obj)).ToList() 
+                            SymbolCrc = Convert.ToUInt32(twp.address.SymbolCrc ?? 0),
+                            AccessArea = Convert.ToUInt32(twp.address.AccessArea ?? 0),
+                            AccessSubArea = Convert.ToUInt32(twp.address.AccessSubArea ?? 0),
+                            LID = twp.address.LID != null 
+                                ? ((IEnumerable<object>)twp.address.LID).Select(obj => Convert.ToUInt32(obj)).ToList() 
                                 : new List<UInt32>()
                         },
-                        tagDataType: Convert.ToUInt32(tp.Datatype ?? 0)
+                        tagDataType: Convert.ToUInt32(twp.Datatype ?? 0),
+                        tagWriteValue: dataConversionDict[Convert.ToUInt32(twp.Datatype ?? 0)](twp.tagDataType)
                     )
                 );
             }
@@ -634,10 +782,10 @@ namespace S7CommPlusDriverWrapper
 
             // build PlcTag objects
             PlcTags tagsToWrite = new PlcTags();
-            foreach (var ttp in targetTagProfiles) {
-                PlcTag tag = PlcTags.TagFactory(ttp.tagName, ttp.tagAddress, ttp.tagDataType);
-
+            foreach (var (tagName, tagAddress, tagDataType, tagWriteValue) in targetTagWriteProfiles) {
+                PlcTag tag = CreateTag(tagName, tagAddress, tagDataType);
                 if (tag != null) {
+                    SetValue(tag, tagWriteValue);
                     output.writeTags.Add(tag);
                     tagsToWrite.AddTag(tag);
                 }   
