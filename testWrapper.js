@@ -193,7 +193,7 @@ const MultiDisconnect = (ipArray) => {
             }).catch ( error => {
                 // store unsuccessful disconnect attempt
                 disConnResults.push({
-                    status: "Success",
+                    status: "Failure",
                     IP: ipAddress,
                     SessID: 0,
                     error: error
@@ -661,25 +661,28 @@ async function main() {
     try {
 
         console.log("\n=== Testing Multiple PLC Connecting ===\n");
-        console.log("Connecting to PLCs @ IPs: \n");
+        console.log("Connecting to PLCs with Connection profiles:");
         for (let i = 0; i < targetPlcIPs_connect.length; i++) {
-            console.log(i + ". " + JSON.stringify(targetPlcIPs_connect[i], null, 2) + "\n");
+            console.log(JSON.stringify(targetPlcIPs_connect[i], null, 2));
         }
         MultiConnRes = await MultiConnect(targetPlcIPs_connect)
-        console.log(MultiConnRes);
+        console.log("Connection Results: \n" + JSON.stringify(MultiConnRes,null,2));
         console.log("\n====================================\n");
 
         console.log("\n=== Testing GetDataBlockPlcTags ===\n");
-        console.log("getting PlcTags of: " + targetDatablockName1 + "\n\tin PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
+        console.log("getting PlcTags of: " + targetDatablockName1 + 
+            "\n\tin PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
         PlcTagListRes = await GetDataBlockPlcTags(targetPlcIPs_connect[1].ipAddress, targetDatablockName1);
-        console.log("Successfully retrieved PlcTags from Datablock: " + targetDatablockName1 + " in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
+        console.log("Successfully retrieved PlcTags from Datablock: " + targetDatablockName1 + 
+            "\n\t in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
         console.log("\n====================================\n");
 
         console.log("\n=== Testing SaveDataBlockPlcTags ===\n");
         console.log("saving PlcTag object list retrieved from " + targetDatablockName1 + "\n\tin PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
         PlcTagDbRes = await SaveDataBlockPlcTags(targetPlcIPs_connect[1].ipAddress, PlcTagListRes, targetDatablockName1);
         console.log("Successfully saved PlcTags retrieved from Datablock: " + targetDatablockName1 + 
-            " in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress + " to LokiDB: " +PlcTagDbRes);
+            "\n\t in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress + 
+            "\n\t\t to LokiDB: " +PlcTagDbRes);
         console.log("\n====================================\n");
 
         console.log("\n=== Testing QueryLokiDB_GetPlcTagsByName ===\n");
@@ -689,7 +692,8 @@ async function main() {
         }
         console.log("from collection " + targetDatablockName1 + " in PlcTag database " + targetLokiDB1);
         PlcTagReadProfiles = await QueryLokiDB_GetPlcTagsByNames(PlcTagDbRes, targetDatablockName1, targetTagSymbols2);
-        console.log("Successfully queried LokiDB: " + PlcTagDbRes + " and retrieved Plc Tag profiles: " + JSON.stringify(PlcTagReadProfiles,null,2));
+        console.log("Successfully queried LokiDB: " + PlcTagDbRes);
+        console.log("Retrieved Plc Tag profiles: " + JSON.stringify(PlcTagReadProfiles,null,2));
         console.log("\n====================================\n");
 
         console.log("\n=== Testing ReadTags ===\n");
@@ -703,11 +707,11 @@ async function main() {
         let PlcTagWriteProfiles = PlcTagReadProfiles.map(tag => {
             let writeValue;
             if (tag.Datatype === 1) {
-                writeValue = true;  // Boolean value
+                writeValue = 5;
             } else if (tag.Datatype === 5) {
-                writeValue = 100;  // Number 1
+                writeValue = 100;  
             } else if (tag.Datatype === 8){
-                writeValue = 88.9;  // Number 2
+                writeValue = 88.9;  
             } else {
                 writeValue = 0;
             }
@@ -722,27 +726,13 @@ async function main() {
         console.log("Plc Tag write results: \n " + JSON.stringify(PlcTagWriteResults,null,2));
         console.log("\n====================================\n");
 
-
-        /*
-        //ALT VERSION USING HARD CODED DATABASE FILENAME
-        console.log("\n=== Testing QueryLokiDB_GetPlcTagsByName ===\n");
-        console.log("getting Plc tags with names: \n")
-        for (let i = 0; i < targetTagSymbols1.length; i++) {
-            console.log(targetTagSymbols1[i] + "\n");
-        }
-        console.log("from collection " + targetDatablockName1 + " in PlcTag database " + targetLokiDB1);
-        PlcTagQueryResults = await QueryLokiDB_GetPlcTagsByNames(targetLokiDB1, targetDatablockName1, targetTagSymbols1);
-        console.log("Successfully queried LokiDB: " + targetLokiDB1 + " and retrieved values: " + JSON.stringify(PlcTagQueryResults,null,2));
-        console.log("\n====================================\n");
-        */
-
         console.log("\n=== Testing Multiple PLC Disconnecting ===\n");
         console.log("Disconnecting from PLC's @ IPs: \n");
         for (let i = 0; i < targetPlcIPs_disconnect.length; i++) {
             console.log(i + ". " + targetPlcIPs_disconnect[i] + "\n");
         }
-        result = await MultiDisconnect(targetPlcIPs_disconnect);
-        console.log(result); 
+        MultiDisconnRes = await MultiDisconnect(targetPlcIPs_disconnect);
+        console.log("Disconnection Results: \n" + JSON.stringify(MultiDisconnRes, null, 2)); 
         console.log("\n====================================\n");
 
         
@@ -759,95 +749,113 @@ main();
 
 
 
-/*class ConsoleUI {
-    constructor() {
-        this.ui = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        });
-        
-        this.commandList = {
-            1: "Connect to PLC(s)",
-            2: "View PLC Connections",
-            3: "Get PLC Datablocks",
-            4: "Get PLC Tags",
-            5: "Read from PLC Tags",
-            6: "Write to PLC Tags",
-            7: "Disconnect from PLC(s)",
-            8: "Exit"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+        //ALT VERSION USING HARD CODED DATABASE FILENAME
+        console.log("\n=== Testing QueryLokiDB_GetPlcTagsByName ===\n");
+        console.log("getting Plc tags with names: \n")
+        for (let i = 0; i < targetTagSymbols1.length; i++) {
+            console.log(targetTagSymbols1[i] + "\n");
         }
-
-        this.commandPrompt = "Enter a Command: \n";
-        for (const [key,val] of Object.entries(this.commandList)) {
-            this.commandPrompt += ("\t" + key + ". " + val + "\n");
-        }
-    }
-
-    promptUser() {
-        //build command prompt
-        var commandPrompt 
-        this.ui.question(
-            this.commandPrompt,
-            (command) => {
-                if (command === '8') {
-                    console.log("Exiting Console Interface...");
-                    this.ui.close()
-                } else {
-                    if (command === '1') {
-                        console.log("<1>");
-                    } else if (command === '2') {
-                        console.log("<2>");
-                    } else if (command === '3') {
-                        console.log("<3>");
-                    } else if (command === '4') {
-                        console.log("<4>");
-                    } else if (command === '5') {
-                        console.log("<5>");
-                    } else if (command === '6') {
-                        console.log("<6>");
-                    } else if (command === '7') {
-                        console.log("<7>");
-                    } else {
-                        console.log("Invalid Command");
-                    }
-                    this.promptUser();
-                }
-            }
-        )
-    }
-    start() {
-        console.log("Console Interface Started...");
-        this.promptUser();
-    }
-}
-
-async function main1() {
-    const consoleUI = new ConsoleUI();
-    consoleUI.start();
-}
-main1();*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        console.log("from collection " + targetDatablockName1 + " in PlcTag database " + targetLokiDB1);
+        PlcTagQueryResults = await QueryLokiDB_GetPlcTagsByNames(targetLokiDB1, targetDatablockName1, targetTagSymbols1);
+        console.log("Successfully queried LokiDB: " + targetLokiDB1 + " and retrieved values: " + JSON.stringify(PlcTagQueryResults,null,2));
+        console.log("\n====================================\n");
+        */
 
 
 
@@ -935,10 +943,7 @@ fs.truncateSync(outputFileName2, 0); // explicitly clear file
 fs.writeFileSync('datablockPlcTagOutput.txt', JSON.stringify(result, null, 2), 'utf8');
 */
 
-/*function isValidIPv4(ip) {
-    const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-    return ipv4Regex.test(ip);
-}*/
+/**/
 
 /* 
 

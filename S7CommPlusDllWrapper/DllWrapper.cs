@@ -16,7 +16,6 @@ using S7CommPlusDriver.ClientApi;
 
 namespace S7CommPlusDriverWrapper
 {
-
     public class DriverManager
     {
         private static Dictionary<UInt32, S7CommPlusConnection> plcConns = new Dictionary<uint, S7CommPlusConnection>();
@@ -172,6 +171,8 @@ namespace S7CommPlusDriverWrapper
 
 
 
+
+
         public async Task<object> Connect(dynamic input) {
             // parse input object
             string ipAddress = (string)input.ipAddress;
@@ -198,6 +199,19 @@ namespace S7CommPlusDriverWrapper
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
         public async Task<object> Disconnect(dynamic input)
         {
             // parse input
@@ -214,6 +228,19 @@ namespace S7CommPlusDriverWrapper
 
             return output;
         }
+        
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -237,9 +264,6 @@ namespace S7CommPlusDriverWrapper
             return output;
         }
 
-
-
-        
 
 
 
@@ -483,19 +507,7 @@ namespace S7CommPlusDriverWrapper
             output.plcTagAccErr = "Successfully retrieved " + targetDataBlockName + "tags";
             return output;
         }
-
         
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -695,18 +707,7 @@ namespace S7CommPlusDriverWrapper
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-        public async Task<object> ReadTags(dynamic input) {
+public async Task<object> ReadTags(dynamic input) {
 
             // parse input
             UInt32 targetConnSessID = (UInt32)input.sessionID2;
@@ -810,63 +811,5 @@ namespace S7CommPlusDriverWrapper
 
             return output;
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
     }
 }
-
-
-
-/*
-Cesar's example from the Driver (DONT DELETE YET)
-private void writeTagBySymbol(string value)
-{
-    tbValue.Text = "";
-    tbSymbolicAddress.Text = "";
-
-    setStatus("loading...");
-    PlcTag tag = conn.getPlcTagBySymbol(tbSymbol.Text);
-    setStatus("connected");
-    if (tag == null) return;
-
- 
-
-    switch (tag.Datatype)
-    {                    
-        case Softdatatype.S7COMMP_SOFTDATATYPE_BOOL:
-            PlcTagBool boolTag = new PlcTagBool(tag.Name, tag.Address, tag.Datatype);
-            boolTag.Value = Convert.ToBoolean(value);
-            break;
-        case Softdatatype.S7COMMP_SOFTDATATYPE_DINT:
-            PlcTagDInt dintTag = new PlcTagDInt(tag.Name, tag.Address, tag.Datatype);
-            dintTag.Value = Convert.ToInt32(value);
-            break;
-        default:
-            break;
-
-
-    }
-        
-    
-    PlcTags tags = new PlcTags();
-
-    tags.WriteTags
-    tags.AddTag(tag);
-    if (tags.ReadTags(conn) != 0) return;
-    tbValue.Text = tag.ToString();
-}
-*/

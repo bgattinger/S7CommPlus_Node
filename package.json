@@ -19,12 +19,15 @@
   "dependencies": {
     "@lokidb/loki": "^2.1.0",
     "async": "^3.2.6",
+    "async-mutex": "^0.5.0",
     "body-parser": "^1.20.3",
     "edge-js": "^23.1.4",
     "electron": "^34.0.0",
     "electron-edge-js": "^33.0.5",
     "express": "^4.21.2",
     "lokijs": "^1.5.12",
+    "ping": "^0.4.4",
+    "readline-sync": "^1.4.10",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
