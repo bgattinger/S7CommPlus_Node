@@ -1,0 +1,59 @@
+
+=== Sun Feb 16 2025 00:49:50 GMT-0700 (Mountain Standard Time) ===
+Failed to Connect PLC @ IP: 192.168.18.25
+
+=== Sun Feb 16 2025 00:49:50 GMT-0700 (Mountain Standard Time) ===
+Successfully Connected to PLC @ IP: 192.168.18.26
+
+=== Sun Feb 16 2025 00:50:00 GMT-0700 (Mountain Standard Time) ===
+Attempting to Reconnect to PLC(s) @ IP(s): 
+	192.168.18.25
+
+=== Sun Feb 16 2025 00:50:22 GMT-0700 (Mountain Standard Time) ===
+Failed to Reconnect to PLC @ IP: 192.168.18.25
+
+=== Sun Feb 16 2025 00:50:22 GMT-0700 (Mountain Standard Time) ===
+Attempting to Reconnect to PLC(s) @ IP(s): 
+	192.168.18.25
+
+=== Sun Feb 16 2025 00:50:43 GMT-0700 (Mountain Standard Time) ===
+Failed to Reconnect to PLC @ IP: 192.168.18.25
+
+=== Sun Feb 16 2025 00:50:43 GMT-0700 (Mountain Standard Time) ===
+Attempting to Reconnect to PLC(s) @ IP(s): 
+	192.168.18.25
+
+=== Sun Feb 16 2025 00:51:04 GMT-0700 (Mountain Standard Time) ===
+Failed to Reconnect to PLC @ IP: 192.168.18.25
+
+=== Sun Feb 16 2025 00:51:04 GMT-0700 (Mountain Standard Time) ===
+Attempting to Reconnect to PLC(s) @ IP(s): 
+	192.168.18.25
+
+=== Sun Feb 16 2025 00:51:25 GMT-0700 (Mountain Standard Time) ===
+Failed to Reconnect to PLC @ IP: 192.168.18.25
+
+=== Sun Feb 16 2025 00:51:25 GMT-0700 (Mountain Standard Time) ===
+Attempting to Reconnect to PLC(s) @ IP(s): 
+	192.168.18.25
+
+=== Sun Feb 16 2025 00:51:46 GMT-0700 (Mountain Standard Time) ===
+Failed to Reconnect to PLC @ IP: 192.168.18.25
+
+=== Sun Feb 16 2025 00:51:46 GMT-0700 (Mountain Standard Time) ===
+Testing Connections to PLC(s) @ IP(s) 
+:	192.168.18.26
+
+=== Sun Feb 16 2025 00:51:46 GMT-0700 (Mountain Standard Time) ===
+Retained Connection to PLC @ IP192.168.18.26
+
+=== Sun Feb 16 2025 00:51:46 GMT-0700 (Mountain Standard Time) ===
+Attempting to Reconnect to PLC(s) @ IP(s): 
+	192.168.18.25
+
+=== Sun Feb 16 2025 00:52:07 GMT-0700 (Mountain Standard Time) ===
+Failed to Reconnect to PLC @ IP: 192.168.18.25
+
+=== Sun Feb 16 2025 00:52:07 GMT-0700 (Mountain Standard Time) ===
+Attempting to Reconnect to PLC(s) @ IP(s): 
+	192.168.18.25

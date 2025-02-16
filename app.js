@@ -8,11 +8,12 @@ const fs = require('fs');
 const { error } = require('console');
 const { Mutex } = require('async-mutex');
 const ping = require('ping');
+const EventEmitter = require('events');
 
 
 class Manager {
 
-    static OUTLOG_FILENAME = "logging.txt";
+    
 
     constructor(reconnectInterval = 10000, pingInterval = 60000) {
         this.ui = new Interface();
@@ -33,17 +34,7 @@ class Manager {
 
     async run() {
 
-        // prepare logging output file
-        await new Promise((resolve,reject) => {
-            fs.writeFile(Manager.OUTLOG_FILENAME, '', (error) => {
-                if (error) {
-                    reject(error);
-                }
-                resolve();
-            })
-        });
-
-        // get PLC Ips from user
+        // get PLC IPs from user input
         this.inputPlcIPs = this.ui.getUserInputPlcIPs()
 
         // attempt initial connections and track which succeeded and which failed
@@ -71,8 +62,16 @@ class Manager {
 
                 if (connRes.status === S7CommPlusDriver.CONNSTAT_SUCCESS) {
                     this.connectedIPs.add(connRes.IP);
+                    this.ui.messageQueue.enqueueMessage(
+                        `\n=== ${new Date()} ===\n`+
+                        "Successfully Connected to PLC @ IP: " + connRes.IP
+                    );
                 } else {
                     this.disconnectedIPs.add(connRes.IP);
+                    this.ui.messageQueue.enqueueMessage(
+                        `\n=== ${new Date()} ===\n`+ 
+                        "Failed to Connect PLC @ IP: " + connRes.IP
+                    );
                 }
             });
         } finally {
@@ -86,31 +85,11 @@ class Manager {
         this.startPingDaemon();
 
         /*######################################### MAIN PROGRAM LOOP #########################################################*/
-        while (true) {
-
-            // deal with enqueued messages
-            while (await this.ui.messageQueue.hasMessage()) {
-                const message = JSON.stringify(await this.ui.messageQueue.dequeueMessage(), null, 2);
-
-                await new Promise((resolve, reject) => {
-                    fs.appendFile(
-                        Manager.OUTLOG_FILENAME, 
-                        message + '\n===\n\n', 
-                        (error) => {
-                            if (error) {
-                                console.error("File write error:", error);
-                                reject(error);
-                            } else {
-                                resolve();
-                            }
-                        }
-                    );
-                });
-            }
-            
+        /*while (true) {
+            // do other interface stuff here
             // Add a delay to prevent 100% CPU usage
             await new Promise(resolve => setTimeout(resolve, 100));
-        }
+        }*/
         /*######################################### MAIN PROGRAM LOOP #########################################################*/
 
     }
@@ -137,9 +116,11 @@ class Manager {
             }
 
             // queue up message that reconnection attempt is being made on failed PLC connections
-            let disConnIPs_string = "";
-            this.disconnectedIPs.forEach(ip => disConnIPs_string += (ip + "\n"));
-            this.ui.messageQueue.enqueueMessage("Retrying Failed connections: \n" + disConnIPs_string);
+            this.ui.messageQueue.enqueueMessage(
+                `\n=== ${new Date()} ===\n` +
+                "Attempting to Reconnect to PLC(s) @ IP(s): \n" + 
+                [...this.disconnectedIPs].map(ip => `\t${ip}`).join("\n")
+            );
 
             let reConnResults;
             try {
@@ -160,9 +141,15 @@ class Manager {
                 if (reConnResult.status === S7CommPlusDriver.CONNSTAT_SUCCESS) {
                     this.disconnectedIPs.delete(reConnResult.IP);
                     this.connectedIPs.add(reConnResult.IP);
-                    this.ui.messageQueue.enqueueMessage(`PLC @ ${reConnResult.IP} is now connected`);
+                    this.ui.messageQueue.enqueueMessage(
+                        `\n=== ${new Date()} ===\n` +
+                        `Successfully Reconnected to PLC @ IP: ${reConnResult.IP}`
+                    );
                 } else {
-                    this.ui.messageQueue.enqueueMessage(`PLC @ ${reConnResult.IP} failed to connect`);
+                    this.ui.messageQueue.enqueueMessage(
+                        `\n=== ${new Date()} ===\n` +
+                        `Failed to Reconnect to PLC @ IP: ${reConnResult.IP}`
+                    );
                 }
             });
         } finally {
@@ -186,9 +173,11 @@ class Manager {
             }
 
             // queue up message that ping tests are being conducted on established PLC connections
-            let connIPs_string = "";
-            this.connectedIPs.forEach(ip => connIPs_string += (ip + "\n"));
-            this.ui.messageQueue.enqueueMessage("Testing establised connections: \n" + connIPs_string);
+            this.ui.messageQueue.enqueueMessage(
+                `\n=== ${new Date()} ===\n` +
+                "Testing Connections to PLC(s) @ IP(s): \n" + 
+                [...this.connectedIPs].map(ip => `\t${ip}`).join("\n")
+            );
 
             let pingResults;
             try {
@@ -204,9 +193,15 @@ class Manager {
                     this.connectedIPs.delete(pingResult.IP);
                     this.driver.forgetConnection(pingResult.IP);
                     this.disconnectedIPs.add(pingResult.IP);
-                    this.ui.messageQueue.enqueueMessage(`connection to PLC @ ${pingResult.IP} is down`);
+                    this.ui.messageQueue.enqueueMessage(
+                        `\n=== ${new Date()} ===\n` +
+                        `Lost Connection to PLC @ IP ${pingResult.IP}`
+                    );
                 } else {
-                    this.ui.messageQueue.enqueueMessage(`connection to PLC @ ${pingResult.IP} is up`);
+                    this.ui.messageQueue.enqueueMessage(
+                        `\n=== ${new Date()} ===\n` +
+                        `Retained Connection to PLC @ IP${pingResult.IP}`
+                    );
                 }
             });
         } finally {
@@ -418,51 +413,64 @@ class Interface {
         return ipv4Regex.test(ip);
     }
 
-    static MessageQueue = class {
+    static MessageQueue  = class {
+
+        static OUTLOG_FILENAME = "MessageLog.txt";
+        static HAVEMESSAGE_EVENT = 'haveMessage';
+
         constructor() {
-            this.queue = [];
-            this.mutex = new Mutex()
+            this.mssgQueue = [];
+            this.isLogging = false;
+
+            // prepare logging output file
+            fs.writeFile(Interface.MessageQueue.OUTLOG_FILENAME, '', (error) => {
+                if (error) {
+                    reject(error);
+                }
+            });
         }
 
-        async enqueueMessage(mssg) {
-            const release = await this.mutex.acquire();
-            try {
-
-                //DEBUGGING
-                //console.log("HERE2", mssg);
-
-                this.queue.push(mssg);
-            } finally {
-                release();
-            }
-            
-        }
-
-        async dequeueMessage() {
-            const release = await this.mutex.acquire();
-            try {
-
-                const mssg = this.queue.shift();
-
-                return mssg;
-            } finally {
-                release();
+        enqueueMessage(mssg) {
+            if (this.isLogging) {
+                this.mssgQueue.push(mssg);
+            } else {
+                this.startLogging(mssg);
             }
         }
 
-        async hasMessage() {
-            const release = await this.mutex.acquire();
+        async startLogging(mssg) {
+            this.isLogging = true;
             try {
-
-                //DEBUGGING
-                //console.log("HERE3", this.queue.length > 0);
-
-                return this.queue.length > 0;
+                // log first message
+                await this.logMessage(mssg);
+                
+                // check if other messages have arrived in queue while logging and log them
+                while (this.mssgQueue.length > 0) {
+                    const nextMssg = this.mssgQueue.shift();
+                    await this.logMessage(nextMssg);
+                }
+            } catch (error) {
+                console.log("Logging Error: " + error);
             } finally {
-                release();
+                this.isLogging = false;
             }
-            
         }
+
+        async logMessage(mssg) {
+            return new Promise((resolve,reject) => {
+                fs.appendFile(Interface.MessageQueue.OUTLOG_FILENAME, 
+                    `${mssg}\n`, 
+                    (error) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve();
+                        }
+                    }
+                );
+            });
+        }
+
     }
 
     constructor() {

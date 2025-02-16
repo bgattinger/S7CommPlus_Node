@@ -1,80 +1,51 @@
-class SessionManager {
-    constructor(driver, retryInterval = 10000) {
-        this.driver = driver;
-        this.failedIPs = new Set();
-        this.retryInterval = retryInterval;
-        this.retryIntervalId = null;
+class Interface {
+
+    constructor() {
+        this.mssgQueue = [];  // Queue to store messages
+        this.isLogging = false;  // Flag to indicate whether we are currently logging
     }
 
-    async startSession(deviceIPs) {
-        console.log("Starting session...");
-
-        const results = await this.driver.Connect(deviceIPs.map(ip => ({
-            ipAddress: ip,
-            password: "default",  // Adjust based on your auth logic
-            timeout: 1000
-        })));
-
-        results.forEach(result => {
-            if (result.status === "Connection Failed") {
-                console.log(`Failed to connect to ${result.IP}, will retry...`);
-                this.failedIPs.add(result.IP);
-            }
-        });
-
-        // Start background retries
-        this.startBackgroundRetry();
-    }
-
-    async retryConnections() {
-        if (this.failedIPs.size === 0) return;
-
-        console.log("Retrying failed connections...");
-        const ipsToRetry = Array.from(this.failedIPs);
-
-        const results = await this.driver.Connect(ipsToRetry.map(ip => ({
-            ipAddress: ip,
-            password: "default",
-            timeout: 1000
-        })));
-
-        results.forEach(result => {
-            if (result.status === "Connection Successful") {
-                console.log(`Successfully reconnected to ${result.IP}`);
-                messageQueue.addMessage(`Device @ ${result.IP} is now connected.`);
-                this.failedIPs.delete(result.IP);
-            }
-        });
-
-        // If all failed connections are resolved, stop retrying
-        if (this.failedIPs.size === 0) {
-            clearInterval(this.retryIntervalId);
-            this.retryIntervalId = null;
+    // Add a message to the queue
+    addMessageToQueue(message) {
+        if (this.isLogging) {
+            // If we are already logging, just add the message to the queue
+            this.mssgQueue.push(message);
+        } else {
+            // If we aren't logging, start logging immediately
+            this.startLogging(message);
         }
     }
 
-    startBackgroundRetry() {
-        if (this.retryIntervalId !== null) return; // Prevent duplicate intervals
-        this.retryIntervalId = setInterval(() => this.retryConnections(), this.retryInterval);
-    }
-}
+    // Process the queue and start logging messages
+    async startLogging(message) {
+        this.isLogging = true;  // Indicate we are logging
+        try {
+            await this.logMessage(message);  // Log the first message
 
-const driver = new Driver();
-const sessionManager = new SessionManager(driver);
-
-async function main() {
-    const userIPs = ["192.168.1.100", "192.168.1.101"]; // User provides these
-    await sessionManager.startSession(userIPs);
-
-    // Simulated main thread loop
-    while (true) {
-        if (messageQueue.hasMessages()) {
-            console.log(messageQueue.getNextMessage());
+            // After logging, check the queue for any other messages
+            while (this.mssgQueue.length > 0) {
+                const nextMessage = this.mssgQueue.shift();
+                await this.logMessage(nextMessage);  // Log the next message
+            }
+        } catch (error) {
+            console.error("Logging error:", error);
+        } finally {
+            // Reset the logging state when done
+            this.isLogging = false;
         }
+    }
 
-        // Simulate user interaction every few seconds
-        await new Promise(resolve => setTimeout(resolve, 3000));
+    // Simulate logging a message (e.g., appending to a file)
+    async logMessage(message) {
+        return new Promise((resolve, reject) => {
+            // Simulating logging by writing to a file (this could be a real file write operation)
+            fs.appendFile('log.txt', message + '\n', (err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+        });
     }
 }
-
-main();
