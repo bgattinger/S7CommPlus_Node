@@ -5,17 +5,14 @@ const { interval, from, Subject } = require('rxjs');
 const { map, mergeMap } = require('rxjs/operators');
 const readlineSync = require('readline-sync');
 const fs = require('fs');
-const { error } = require('console');
+const { error, time } = require('console');
 const { Mutex } = require('async-mutex');
 const ping = require('ping');
 const EventEmitter = require('events');
 
 
 class Manager {
-
-    
-
-    constructor(reconnectInterval = 10000, pingInterval = 60000) {
+    constructor(reconnectInterval = 30000, pingInterval = 60000) {
         this.ui = new Interface();
         this.driver = new S7CommPlusDriver();
 
@@ -32,51 +29,62 @@ class Manager {
         this.pingIntervalID = null;
     }
 
+
+
+
+
+
+
+
+
+
     async run() {
 
         // get PLC IPs from user input
         this.inputPlcIPs = this.ui.getUserInputPlcIPs()
 
+        this.ui.messageQueue.enqueueMessage(
+            `\n=== ${new Date()} ===\n` +
+            "Initiating Connections to PLC(s) @ IP(s): \n" + 
+            [...this.inputPlcIPs].map(ip => `\t${ip}`).join("\n")
+        );
+
         // attempt initial connections and track which succeeded and which failed
-        const release = await this.mutex.acquire();                                     // DEV NOTE: Mutex probably not needed here but good to have jic and wont get in the way
-        try {   
-            let connResults = [];
+        const initConnPromises = [...this.inputPlcIPs].map(async ip => {
+            // Call single instance of Connect method for each single IP address asynchronously
             try {
-                connResults = await this.driver.Connect(
-                    [...this.inputPlcIPs].map(ip => ({
-                        ipAddress: ip,
-                        password: "",
-                        timeout: 5000
-                    }))
-                );
+                const initConnResults = await this.driver.Connect([{
+                    ipAddress: ip,
+                    password: "",
+                    timeout: 5000
+                }]);
+                // Handle each single initial connection attempt as it resolves
+                const initConnRes = initConnResults[0];
 
-            } catch (error) {
-                throw new Error(error.message);
-            }
-            
-            // track which initial connections were successful and which failed
-            connResults.forEach(connRes => {
-
-                //DEBUGGING
-                //console.log("HERE1", connRes);
-
-                if (connRes.status === S7CommPlusDriver.CONNSTAT_SUCCESS) {
-                    this.connectedIPs.add(connRes.IP);
+                if (initConnRes.status === S7CommPlusDriver.CONNSTAT_SUCCESS) {
+                    this.connectedIPs.add(initConnRes.IP);
                     this.ui.messageQueue.enqueueMessage(
-                        `\n=== ${new Date()} ===\n`+
-                        "Successfully Connected to PLC @ IP: " + connRes.IP
+                        `\n=== ${new Date()} ===\n` +
+                        "Successfully Connected to PLC @ IP: " + initConnRes.IP
                     );
                 } else {
-                    this.disconnectedIPs.add(connRes.IP);
+                    this.disconnectedIPs.add(initConnRes.IP);
                     this.ui.messageQueue.enqueueMessage(
-                        `\n=== ${new Date()} ===\n`+ 
-                        "Failed to Connect PLC @ IP: " + connRes.IP
+                        `\n=== ${new Date()} ===\n` +
+                        "Failed to Connect to PLC @ IP: " + initConnRes.IP
                     );
                 }
-            });
-        } finally {
-            release();
-        }
+            } catch (error) {
+                this.disconnectedIPs.add(initConnRes.IP);
+                this.ui.messageQueue.enqueueMessage(
+                    `\n=== ${new Date()} ===\n` +
+                    "Error on Connect to PLC @ IP: " + ip + "\n" +
+                    "Error: " + error
+                );
+            }
+        });
+        // wait until all initial connection attempts resolve or reject
+        await Promise.all(initConnPromises);
 
         // start background reconnection operation (asynchronous)
         this.startReconnectDaemon();
@@ -97,6 +105,12 @@ class Manager {
 
 
 
+
+
+
+
+
+
     startReconnectDaemon() {
         // DEV NOTE: would like to implement exponential backoff for reconnection interval l8r (for funsies)
 
@@ -107,13 +121,10 @@ class Manager {
             this.reconnectIntervalID = setInterval(() => this.runReconnectDaemon(), this.reconnectInterval);
         }
     }
-
     async runReconnectDaemon() {
         const release = await this.mutex.acquire();
         try {
-            if (this.disconnectedIPs.size === 0) {
-                return;
-            }
+            if (this.disconnectedIPs.size === 0) { return; }
 
             // queue up message that reconnection attempt is being made on failed PLC connections
             this.ui.messageQueue.enqueueMessage(
@@ -122,40 +133,52 @@ class Manager {
                 [...this.disconnectedIPs].map(ip => `\t${ip}`).join("\n")
             );
 
-            let reConnResults;
-            try {
-                reConnResults = await this.driver.Connect(
-                    [...this.disconnectedIPs].map(ip => ({
+
+            // attempt to reconnect to disconnected PLC IPs
+            const reConnPromises = [...this.disconnectedIPs].map(async (ip) => {
+                // Call single instance of Connect method for each single IP address
+                try {
+                    const reConnResults = await this.driver.Connect([{
                         ipAddress: ip,
                         password: "",
                         timeout: 5000
-                    }))
-                ); 
-            } catch (error) {
-                throw new Error(error.message);
-            }
-            
-           
-            // queue up messages about results of reconnection attempt
-            reConnResults.forEach(reConnResult => {
-                if (reConnResult.status === S7CommPlusDriver.CONNSTAT_SUCCESS) {
-                    this.disconnectedIPs.delete(reConnResult.IP);
-                    this.connectedIPs.add(reConnResult.IP);
+                    }]);
+                    // Handle each single reconnection attempt as it resolves
+                    const reConnRes = reConnResults[0];
+
+                    if (reConnRes.status === S7CommPlusDriver.CONNSTAT_SUCCESS) {
+                        this.disconnectedIPs.delete(reConnRes.IP);
+                        this.connectedIPs.add(reConnRes.IP);
+                        this.ui.messageQueue.enqueueMessage(
+                            `\n=== ${new Date()} ===\n` +
+                            `Successfully Reconnected to PLC @ IP: ${reConnRes.IP}`
+                        );
+                    } else {
+                        this.ui.messageQueue.enqueueMessage(
+                            `\n=== ${new Date()} ===\n` +
+                            `Failed to Reconnect to PLC @ IP: ${reConnRes.IP}`
+                        );
+                    }
+                } catch (error) {
                     this.ui.messageQueue.enqueueMessage(
                         `\n=== ${new Date()} ===\n` +
-                        `Successfully Reconnected to PLC @ IP: ${reConnResult.IP}`
-                    );
-                } else {
-                    this.ui.messageQueue.enqueueMessage(
-                        `\n=== ${new Date()} ===\n` +
-                        `Failed to Reconnect to PLC @ IP: ${reConnResult.IP}`
+                        "Error on Reconnect to PLC @ IP: " + ip + "\n" +
+                        "Error: " + error
                     );
                 }
             });
+            // wait until all reconnection attempts resolve or reject
+            await Promise.all(reConnPromises);
         } finally {
             release();
         }
     }
+
+
+
+
+
+
 
     startPingDaemon() {
         if (this.pingIntervalID !== null) {
@@ -164,13 +187,10 @@ class Manager {
             this.pingIntervalID = setInterval(() => this.runPingDaemon(), this.pingInterval);
         }
     }
-
     async runPingDaemon() {
         const release = await this.mutex.acquire();
         try {
-            if (this.connectedIPs.size === 0) {
-                return;
-            }
+            if (this.connectedIPs.size === 0) { return; }
 
             // queue up message that ping tests are being conducted on established PLC connections
             this.ui.messageQueue.enqueueMessage(
@@ -179,31 +199,41 @@ class Manager {
                 [...this.connectedIPs].map(ip => `\t${ip}`).join("\n")
             );
 
-            let pingResults;
-            try {
-                pingResults = await this.driver.Ping(
-                    [...this.connectedIPs]
-                );
-            } catch (error) {
-                throw new Error(error.message);
-            }
 
-            pingResults.forEach(pingResult => {
-                if (pingResult.status === S7CommPlusDriver.CONN_ISDEAD) {
-                    this.connectedIPs.delete(pingResult.IP);
-                    this.driver.forgetConnection(pingResult.IP);
-                    this.disconnectedIPs.add(pingResult.IP);
-                    this.ui.messageQueue.enqueueMessage(
-                        `\n=== ${new Date()} ===\n` +
-                        `Lost Connection to PLC @ IP ${pingResult.IP}`
+            // check connection to each PLC Ips
+            const pingPromises = [...this.connectedIPs].map(async (ip) => {
+                // Call single instance of Ping method for each single IP address
+                try {
+                    const pingResults = await this.driver.Ping(
+                        [ip]
                     );
-                } else {
+                    // Handle each single ping test as it resolves
+                    const pingRes = pingResults[0];
+
+                    if (pingRes.status === S7CommPlusDriver.CONN_ISALIVE) {
+                        this.ui.messageQueue.enqueueMessage(
+                            `\n=== ${new Date()} ===\n` +
+                            `Retained Connection to PLC @ IP${pingRes.IP}`
+                        );
+                    } else {
+                        this.connectedIPs.delete(pingRes.IP);
+                        this.driver.forgetConnection(pingRes.IP);
+                        this.disconnectedIPs.add(pingResult.IP);
+                        this.ui.messageQueue.enqueueMessage(
+                            `\n=== ${new Date()} ===\n` +
+                            `Lost Connection to PLC @ IP ${pingRes.IP}`
+                        );
+                    }
+                } catch (error) {
                     this.ui.messageQueue.enqueueMessage(
                         `\n=== ${new Date()} ===\n` +
-                        `Retained Connection to PLC @ IP${pingResult.IP}`
+                        "Error on Reconnect to PLC @ IP: " + ip + "\n" +
+                        "Error: " + error
                     );
                 }
             });
+            // wait until all ping tests resolve or reject
+            await Promise.all(pingPromises);
         } finally {
             release();
         }
@@ -309,7 +339,7 @@ class S7CommPlusDriver {
                             status: S7CommPlusDriver.CONNSTAT_FAIL,
                             IP: connParam.ipAddress,
                             SessID: 0,
-                            error: new Error(`Unable to connect to PLC @ IP: ${connParam.ipAddress} (connection code: ${connRes})`)
+                            ConnCode: connRes
                         });
                         return;
                     } // else
@@ -325,7 +355,8 @@ class S7CommPlusDriver {
                     resolve({
                         status: S7CommPlusDriver.CONNSTAT_SUCCESS,
                         IP: connParam.ipAddress,
-                        SessID: sessID2
+                        SessID: sessID2,
+                        ConnCode: connRes
                     });
                 });
             });
@@ -488,7 +519,7 @@ class Interface {
             while (true) {
                 let ip = readlineSync.question("IP > ");
                 if (ip === '') {
-                    if (inputPlcIPs.length === 0) {
+                    if (inputPlcIPs.size === 0) {
                         console.log("No IP addresses have been entered.\nRestarting...");
                         return this.getUserInputPlcIPs(); // Restart if no IPs were entered
                     }
@@ -531,3 +562,106 @@ async function main() {
     
 }
 main();
+
+
+
+/*
+            let reConnResults;
+            try {
+                reConnResults = await this.driver.Connect(
+                    [...this.disconnectedIPs].map(ip => ({
+                        ipAddress: ip,
+                        password: "",
+                        timeout: 5000
+                    }))
+                ); 
+            } catch (error) {
+                throw new Error(error.message);
+            }
+            
+           
+            // queue up messages about results of reconnection attempt
+            reConnResults.forEach(reConnResult => {
+                if (reConnResult.status === S7CommPlusDriver.CONNSTAT_SUCCESS) {
+                    this.disconnectedIPs.delete(reConnResult.IP);
+                    this.connectedIPs.add(reConnResult.IP);
+                    this.ui.messageQueue.enqueueMessage(
+                        `\n=== ${new Date()} ===\n` +
+                        `Successfully Reconnected to PLC @ IP: ${reConnResult.IP}`
+                    );
+                } else {
+                    this.ui.messageQueue.enqueueMessage(
+                        `\n=== ${new Date()} ===\n` +
+                        `Failed to Reconnect to PLC @ IP: ${reConnResult.IP}`
+                    );
+                }
+            });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            async runReconnectDaemon() {
+        const release = await this.mutex.acquire();
+        try {
+            if (this.disconnectedIPs.size === 0) { return; }
+
+            // queue up message that reconnection attempt is being made on failed PLC connections
+            this.ui.messageQueue.enqueueMessage(
+                `\n=== ${new Date()} ===\n` +
+                "Attempting to Reconnect to PLC(s) @ IP(s): \n" + 
+                [...this.disconnectedIPs].map(ip => `\t${ip}`).join("\n")
+            );
+
+
+            // attempt to reconnect to disconnected PLC IPs
+            const reConnPromises = [...this.disconnectedIPs].map(ip => {
+                // Call single instance of Connect method for each single IP address
+                return this.driver.Connect([{
+                    ipAddress: ip,
+                    password: "",
+                    timeout: 5000
+                }])
+                .then(reConnResults => {
+                    // Handle each single reconnection attempt as it resolves
+                    reConnRes = reConnResults[0];
+
+                    if (reConnRes.status === S7CommPlusDriver.CONNSTAT_SUCCESS) {
+                        this.disconnectedIPs.delete(reConnRes.IP);
+                        this.connectedIPs.add(reConnRes.IP);
+                        this.ui.messageQueue.enqueueMessage(
+                            `\n=== ${new Date()} ===\n` +
+                            `Successfully Reconnected to PLC @ IP: ${reConnRes.IP}`
+                        );
+                    } else {
+                        this.ui.messageQueue.enqueueMessage(
+                            `\n=== ${new Date()} ===\n` +
+                            `Failed to Reconnect to PLC @ IP: ${reConnRes.IP}`
+                        );
+                    }
+                })
+                .catch(error => {
+                    this.disconnectedIPs.add(initConnRes.IP);
+                    this.ui.messageQueue.enqueueMessage(
+                        `\n=== ${new Date()} ===\n`+ 
+                        "Error on Reconnect to PLC @ IP: " + ip + "\n" +
+                        "Error: " + error
+                    );
+                });
+            });
+            // wait until all reconnection attempts resolve or reject
+            await Promise.all(reConnPromises);
+        } finally {
+            release();
+        }
+    }
+            */
