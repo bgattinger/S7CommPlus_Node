@@ -29,15 +29,6 @@ class Manager {
         this.pingIntervalID = null;
     }
 
-
-
-
-
-
-
-
-
-
     async run() {
 
         // get PLC IPs from user input
@@ -102,15 +93,6 @@ class Manager {
 
     }
 
-
-
-
-
-
-
-
-
-
     startReconnectDaemon() {
         // DEV NOTE: would like to implement exponential backoff for reconnection interval l8r (for funsies)
 
@@ -121,6 +103,7 @@ class Manager {
             this.reconnectIntervalID = setInterval(() => this.runReconnectDaemon(), this.reconnectInterval);
         }
     }
+
     async runReconnectDaemon() {
         const release = await this.mutex.acquire();
         try {
@@ -173,13 +156,7 @@ class Manager {
             release();
         }
     }
-
-
-
-
-
-
-
+    
     startPingDaemon() {
         if (this.pingIntervalID !== null) {
             return;
@@ -562,106 +539,3 @@ async function main() {
     
 }
 main();
-
-
-
-/*
-            let reConnResults;
-            try {
-                reConnResults = await this.driver.Connect(
-                    [...this.disconnectedIPs].map(ip => ({
-                        ipAddress: ip,
-                        password: "",
-                        timeout: 5000
-                    }))
-                ); 
-            } catch (error) {
-                throw new Error(error.message);
-            }
-            
-           
-            // queue up messages about results of reconnection attempt
-            reConnResults.forEach(reConnResult => {
-                if (reConnResult.status === S7CommPlusDriver.CONNSTAT_SUCCESS) {
-                    this.disconnectedIPs.delete(reConnResult.IP);
-                    this.connectedIPs.add(reConnResult.IP);
-                    this.ui.messageQueue.enqueueMessage(
-                        `\n=== ${new Date()} ===\n` +
-                        `Successfully Reconnected to PLC @ IP: ${reConnResult.IP}`
-                    );
-                } else {
-                    this.ui.messageQueue.enqueueMessage(
-                        `\n=== ${new Date()} ===\n` +
-                        `Failed to Reconnect to PLC @ IP: ${reConnResult.IP}`
-                    );
-                }
-            });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            async runReconnectDaemon() {
-        const release = await this.mutex.acquire();
-        try {
-            if (this.disconnectedIPs.size === 0) { return; }
-
-            // queue up message that reconnection attempt is being made on failed PLC connections
-            this.ui.messageQueue.enqueueMessage(
-                `\n=== ${new Date()} ===\n` +
-                "Attempting to Reconnect to PLC(s) @ IP(s): \n" + 
-                [...this.disconnectedIPs].map(ip => `\t${ip}`).join("\n")
-            );
-
-
-            // attempt to reconnect to disconnected PLC IPs
-            const reConnPromises = [...this.disconnectedIPs].map(ip => {
-                // Call single instance of Connect method for each single IP address
-                return this.driver.Connect([{
-                    ipAddress: ip,
-                    password: "",
-                    timeout: 5000
-                }])
-                .then(reConnResults => {
-                    // Handle each single reconnection attempt as it resolves
-                    reConnRes = reConnResults[0];
-
-                    if (reConnRes.status === S7CommPlusDriver.CONNSTAT_SUCCESS) {
-                        this.disconnectedIPs.delete(reConnRes.IP);
-                        this.connectedIPs.add(reConnRes.IP);
-                        this.ui.messageQueue.enqueueMessage(
-                            `\n=== ${new Date()} ===\n` +
-                            `Successfully Reconnected to PLC @ IP: ${reConnRes.IP}`
-                        );
-                    } else {
-                        this.ui.messageQueue.enqueueMessage(
-                            `\n=== ${new Date()} ===\n` +
-                            `Failed to Reconnect to PLC @ IP: ${reConnRes.IP}`
-                        );
-                    }
-                })
-                .catch(error => {
-                    this.disconnectedIPs.add(initConnRes.IP);
-                    this.ui.messageQueue.enqueueMessage(
-                        `\n=== ${new Date()} ===\n`+ 
-                        "Error on Reconnect to PLC @ IP: " + ip + "\n" +
-                        "Error: " + error
-                    );
-                });
-            });
-            // wait until all reconnection attempts resolve or reject
-            await Promise.all(reConnPromises);
-        } finally {
-            release();
-        }
-    }
-            */
