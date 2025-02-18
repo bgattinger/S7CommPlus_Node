@@ -107,7 +107,13 @@ class Manager {
     async runReconnectDaemon() {
         const release = await this.mutex.acquire();
         try {
-            if (this.disconnectedIPs.size === 0) { return; }
+            if (this.disconnectedIPs.size === 0) { 
+                this.ui.messageQueue.enqueueMessage(
+                    `\n=== ${new Date()} ===\n` +
+                    "No Disconnected PLCs Detected" 
+                );
+                return; 
+            }
 
             // queue up message that reconnection attempt is being made on failed PLC connections
             this.ui.messageQueue.enqueueMessage(
@@ -167,7 +173,13 @@ class Manager {
     async runPingDaemon() {
         const release = await this.mutex.acquire();
         try {
-            if (this.connectedIPs.size === 0) { return; }
+            if (this.connectedIPs.size === 0) {
+                this.ui.messageQueue.enqueueMessage(
+                    `\n=== ${new Date()} ===\n` +
+                    "No Connected PLCs to Ping" 
+                );
+                return;
+            }
 
             // queue up message that ping tests are being conducted on established PLC connections
             this.ui.messageQueue.enqueueMessage(
@@ -194,8 +206,11 @@ class Manager {
                         );
                     } else {
                         this.connectedIPs.delete(pingRes.IP);
-                        this.driver.forgetConnection(pingRes.IP);
-                        this.disconnectedIPs.add(pingResult.IP);
+                        
+                        // DEV NOTE:
+                        // Not sure I want or need to use this
+                        //this.driver.forgetConnection(pingRes.IP);
+                        this.disconnectedIPs.add(pingRes.IP);
                         this.ui.messageQueue.enqueueMessage(
                             `\n=== ${new Date()} ===\n` +
                             `Lost Connection to PLC @ IP ${pingRes.IP}`

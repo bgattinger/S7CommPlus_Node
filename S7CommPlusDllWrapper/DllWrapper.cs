@@ -187,10 +187,20 @@ namespace S7CommPlusDriverWrapper
 
             S7CommPlusConnection conn = new S7CommPlusConnection();
             output.connRes = await Task.Run(() => conn.Connect(ipAddress, password, timeout));
+            output.sessionID2 = conn.SessionId2;
             if (output.connRes == 0) {
+
                 // connection successful
-                plcConns.Add(conn.SessionId2, conn);
-                output.sessionID2 = conn.SessionId2;
+                /* DEV NOTE: 
+                    Connect() calls to previously connected IPs seem to yield the same sessionID2 value
+                    we allow the plcConns dictionary to remember the previous connection and its sessionID2 value
+                    which is why we check for it here */
+                if (plcConns.ContainsKey(output.sessionID2)) {
+                    plcConns[output.sessionID2] = conn;
+                } else {
+                    plcConns.Add(conn.SessionId2, conn);
+                }
+                
             } //else
             // connection unsuccessful 
             
