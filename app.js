@@ -4,11 +4,13 @@ const async = require('async');
 const { interval, from, Subject } = require('rxjs');
 const { map, mergeMap } = require('rxjs/operators');
 const readlineSync = require('readline-sync');
+const readline = require('readline');
 const fs = require('fs');
 const { error, time } = require('console');
 const { Mutex } = require('async-mutex');
 const ping = require('ping');
 const EventEmitter = require('events');
+const { exit } = require('process');
 
 
 class Manager {
@@ -19,6 +21,8 @@ class Manager {
         this.inputPlcIPs = new Set();
         this.connectedIPs = new Set();
         this.disconnectedIPs = new Set();
+
+        this.mutex = new Mutex();
 
         this.connectionAuditIntervalID = null
         this.connectionAuditInterval = connAuditInterval
@@ -76,13 +80,56 @@ class Manager {
         this.startConnectionAuditDaemon();
 
         /*######################################### MAIN PROGRAM LOOP #########################################################*/
-        /*while (true) {
-            // do other interface stuff here
-            // Add a delay to prevent 100% CPU usage
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }*/
+        while (true) {
+            const userCmd = await this.ui.getUserCommand();
+
+            if (Interface.COMMAND_MAP.get(userCmd) === "Exit") {
+                console.log("Terminating Session...");
+                process.exit(0);
+            }
+
+            console.log(`Peforming Command \"${Interface.COMMAND_MAP.get(userCmd)}\"`);
+        }
         /*######################################### MAIN PROGRAM LOOP #########################################################*/
 
+    }
+
+    async ConnectToPLCs(plcIPs) {
+        const connPromises = [...this.plcIPs].map(async ip => {
+            // Call single instance of Connect method for each single IP address asynchronously
+            try {
+                const initConnResults = await this.driver.Connect([{
+                    ipAddress: ip,
+                    password: "",
+                    timeout: 5000
+                }]);
+                // Handle each single initial connection attempt as it resolves
+                const initConnRes = initConnResults[0];
+
+                if (initConnRes.status === S7CommPlusDriver.CONNSTAT_SUCCESS) {
+                    this.connectedIPs.add(initConnRes.IP);
+                    this.ui.messageQueue.enqueueMessage(
+                        `\n=== ${new Date()} ===\n` +
+                        "Successfully Connected to PLC @ IP: " + initConnRes.IP
+                    );
+                } else {
+                    this.disconnectedIPs.add(initConnRes.IP);
+                    this.ui.messageQueue.enqueueMessage(
+                        `\n=== ${new Date()} ===\n` +
+                        "Failed to Connect to PLC @ IP: " + initConnRes.IP
+                    );
+                }
+            } catch (error) {
+                this.disconnectedIPs.add(initConnRes.IP);
+                this.ui.messageQueue.enqueueMessage(
+                    `\n=== ${new Date()} ===\n` +
+                    "Error on Connect to PLC @ IP: " + ip + "\n" +
+                    "Error: " + error
+                );
+            }
+        });
+        // wait until all initial connection attempts resolve or reject
+        await Promise.all(connPromises);
     }
 
     startConnectionAuditDaemon() {
@@ -392,6 +439,13 @@ class Interface {
         return ipv4Regex.test(ip);
     }
 
+    static COMMAND_MAP = new Map([
+        [0, "Exit"],
+        [1, "View PLC Connection Statuses"],
+        [2, "Connect to PLCs"],
+        [3, "Disconnect from PLCS"],
+    ])
+
     static MessageQueue  = class {
 
         static OUTLOG_FILENAME = "MessageLog.txt";
@@ -454,6 +508,7 @@ class Interface {
 
     constructor() {
         this.messageQueue = new Interface.MessageQueue();
+        
     }
 
     getUserInputPlcIPs() {
@@ -495,6 +550,38 @@ class Interface {
         }
 
         return inputPlcIPs;
+    }
+
+    async getUserCommand() {
+        let userCmd = 0;
+
+        console.log("Select a Command: \n" +
+            [...Interface.COMMAND_MAP.entries()]
+            .map(([key,val]) => `\t${key}. ${val}`)
+            .join("\n")
+        );
+
+        const rl = readline.createInterface({
+            input:process.stdin,
+            output: process.stdout
+        });
+
+        return new Promise((resolve,reject) => {
+            const askCmd = () => {
+                rl.question("CMD > ", (input) => {
+                    userCmd = Number(input);
+                    if (!isNaN(userCmd) && Interface.COMMAND_MAP.has(userCmd)) {
+                        console.log("Command " + Interface.COMMAND_MAP.get(userCmd) + " Entered");
+                        rl.close()
+                        resolve(userCmd);
+                    } else {
+                        console.log("Invalid Command");
+                        askCmd();
+                    }
+                });
+            };
+            askCmd();
+        });
     }
 }
 
