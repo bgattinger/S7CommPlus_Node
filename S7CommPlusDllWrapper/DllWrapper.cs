@@ -12,6 +12,7 @@ using System.Net.Sockets;
 using S7CommPlusDriver;
 using S7CommPlusDriver.ClientApi;
 using System.Net;
+using System.IO;
 
 
 //Note: all function return values are boxed in a Task<object> before being returned
@@ -226,139 +227,37 @@ namespace S7CommPlusDriverWrapper
 
 
 
-        public async Task<object> CheckConnection(dynamic input)
-        {
-            // Parse input
-            IPEndPoint targetEndPoint = new IPEndPoint(
-                IPAddress.Parse((string)input.ipAddress),
-                ISOTCP_PORT
-            );
+        public async Task<object> CheckConnection(dynamic input) {
+            // parse input
+            UInt32 targetConnSessID = (UInt32)input.sessionID2;
 
-            // Init output object (initialize to disconnected value)
-            bool output = false;
+            // Init output object (initialize to connected value)
+            bool output = true;
 
-            // conudct TCP Ping test
-            using (Socket PingSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-            {
-                try
-                {
-                    // Start the connection
-                    var connectTask = PingSocket.ConnectAsync(targetEndPoint);
-                    var completedTask = await Task.WhenAny(connectTask, Task.Delay(TCPPING_TIMEOUT));
+            // get connection object
+            if (!plcConns.ContainsKey(targetConnSessID)) {
+                return output;
+            } // else 
+            S7CommPlusConnection conn = plcConns[targetConnSessID];
 
-                    // Check if the connect task completed before the timeout
-                    if (completedTask == connectTask)
-                    {
-                        // Ensure the socket is actually connected
-                        if (PingSocket.Connected)
-                        {
-                            output = true;
-                        }
-                    }
-                }
-                catch (SocketException)
-                {
-                    // Catch any socket exceptions (e.g., connection failure)
-                    output = false;
-                }
+            // check connection by performing a pseudo read 
+            // (we call the S&CommPlusDriver's ReadValues with an empty address list and supress its console output)
+            var res = -1;
+            var origConsoleOut = Console.Out;
+            var strWriter = new StringWriter();
+            try {
+                Console.SetOut(strWriter);
+                List<object> pseudoVals = new List<object>();
+                List<ulong> pseudoErrors = new List<ulong>();
+                res = await Task.Run(() => conn.ReadValues(new List<ItemAddress>(), out pseudoVals, out pseudoErrors));
+            } finally {
+                Console.SetOut(origConsoleOut);
+            }
+            if (res != 0) {
+                output = false;
             }
             return output;
         }
-
-
-
-
-
-
-
-
-
-
-
-
-    public async Task<object> CheckConnectionNative(dynamic input) {
-        // parse input
-        UInt32 targetConnSessID = (UInt32)input.sessionID2;
-
-        // Init output object (initialize to connected value)
-        bool output = true;
-
-        // get connection object
-        if (!plcConns.ContainsKey(targetConnSessID)) {
-            return output;
-        } // else 
-        S7CommPlusConnection conn = plcConns[targetConnSessID];
-
-        List<ItemAddress> pseudoAddressList = new List<ItemAddress>();
-        List<object> pseudoValueList = new List<object>();
-        System.Collections.Generic.List<ulong> pseudoErrorList = new System.Collections.Generic.List<ulong>();
-
-
-
-
-
-
-        
-
-        var res = conn.ReadValues(pseudoAddressList, out pseudoValueList, out pseudoErrorList);
-
-        if (res != 0) {
-            output = false;
-        }
-
-        return output;
-    }
-
-
-    
-    /*public async Task<object> CheckConnectionNative(dynamic input) {
-        // parse input
-        UInt32 targetConnSessID = (UInt32)input.sessionID2;
-
-        // Init output object (initialize to connected value)
-        bool output = true;
-
-        // get connection object
-        if (!plcConns.ContainsKey(targetConnSessID)) {
-            return output;
-        } // else 
-        S7CommPlusConnection conn = plcConns[targetConnSessID];
-
-
-
-        FieldInfo s7clientField = typeof(S7CommPlusConnection).GetField("m_client", BindingFlags.NonPublic | BindingFlags.Instance);
-        object s7Client = s7clientField.GetValue(conn);
-
-        FieldInfo msgSocketField = s7Client.GetType().GetField("Socket", BindingFlags.NonPublic | BindingFlags.Instance);
-        object msgSocket = msgSocketField.GetValue(s7Client);
-
-        FieldInfo tcpSocketField = msgSocket.GetType().GetField("TCPSocket", BindingFlags.NonPublic | BindingFlags.Instance);
-        Socket tcpSocket = (Socket)tcpSocketField.GetValue(msgSocket);
-
-        Console.WriteLine(tcpSocket.Poll(1000, SelectMode.SelectRead));
-        Console.WriteLine(tcpSocket.Available == 0);
-
-        if (tcpSocket.Poll(1000, SelectMode.SelectRead) && tcpSocket.Available == 0) {
-            output = false;
-        }
-
-        try {
-            tcpSocket.Send(new byte[1],0,0);
-        } catch (SocketException ex) {
-            if (
-                ex.SocketErrorCode == SocketError.NotConnected ||
-                ex.SocketErrorCode == SocketError.ConnectionReset
-            ) {
-                output = false;
-            } 
-        }
-
-        Console.WriteLine(output);
-
-        return output;
-    }*/
-
-
 
 
 
@@ -1022,3 +921,77 @@ namespace S7CommPlusDriverWrapper
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+        // This works but relies on creation of additional tcp socket 
+        public async Task<object> CheckConnection(dynamic input)
+        {
+            // Parse input
+            IPEndPoint targetEndPoint = new IPEndPoint(
+                IPAddress.Parse((string)input.ipAddress),
+                ISOTCP_PORT
+            );
+
+            // Init output object (initialize to disconnected value)
+            bool output = false;
+
+            // conudct TCP Ping test
+            using (Socket PingSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+            {
+                try
+                {
+                    // Start the connection
+                    var connectTask = PingSocket.ConnectAsync(targetEndPoint);
+                    var completedTask = await Task.WhenAny(connectTask, Task.Delay(TCPPING_TIMEOUT));
+
+                    // Check if the connect task completed before the timeout
+                    if (completedTask == connectTask)
+                    {
+                        // Ensure the socket is actually connected
+                        if (PingSocket.Connected)
+                        {
+                            output = true;
+                        }
+                    }
+                }
+                catch (SocketException)
+                {
+                    // Catch any socket exceptions (e.g., connection failure)
+                    output = false;
+                }
+            }
+            return output;
+        }
+        */

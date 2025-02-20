@@ -1,66 +1,121 @@
 
-=== Wed Feb 19 2025 17:03:19 GMT-0700 (Mountain Standard Time) ===
+=== Thu Feb 20 2025 12:00:19 GMT-0700 (Mountain Standard Time) ===
 Initiating Connections to PLC(s) @ IP(s): 
-	192.168.18.25
 	192.168.18.26
+	192.168.18.25
 
-=== Wed Feb 19 2025 17:03:19 GMT-0700 (Mountain Standard Time) ===
+=== Thu Feb 20 2025 12:00:19 GMT-0700 (Mountain Standard Time) ===
 Successfully Connected to PLC @ IP: 192.168.18.25
 
-=== Wed Feb 19 2025 17:03:22 GMT-0700 (Mountain Standard Time) ===
+=== Thu Feb 20 2025 12:00:22 GMT-0700 (Mountain Standard Time) ===
 Successfully Connected to PLC @ IP: 192.168.18.26
 
-=== Wed Feb 19 2025 17:03:52 GMT-0700 (Mountain Standard Time) ===
+=== Thu Feb 20 2025 12:00:27 GMT-0700 (Mountain Standard Time) ===
 Testing Connections to PLC(s) @ IP(s): 
 	192.168.18.25
 	192.168.18.26
 
-=== Wed Feb 19 2025 17:03:52 GMT-0700 (Mountain Standard Time) ===
+=== Thu Feb 20 2025 12:00:27 GMT-0700 (Mountain Standard Time) ===
 Retained Connection to PLC @ IP: 192.168.18.25
 
-=== Wed Feb 19 2025 17:03:52 GMT-0700 (Mountain Standard Time) ===
+=== Thu Feb 20 2025 12:00:27 GMT-0700 (Mountain Standard Time) ===
 Retained Connection to PLC @ IP: 192.168.18.26
 
-=== Wed Feb 19 2025 17:04:22 GMT-0700 (Mountain Standard Time) ===
+=== Thu Feb 20 2025 12:00:32 GMT-0700 (Mountain Standard Time) ===
 Testing Connections to PLC(s) @ IP(s): 
 	192.168.18.25
 	192.168.18.26
 
-=== Wed Feb 19 2025 17:04:32 GMT-0700 (Mountain Standard Time) ===
-Lost Connection to PLC @ IP: 192.168.18.25
-
-=== Wed Feb 19 2025 17:04:32 GMT-0700 (Mountain Standard Time) ===
-Lost Connection to PLC @ IP: 192.168.18.26
-
-=== Wed Feb 19 2025 17:04:32 GMT-0700 (Mountain Standard Time) ===
-Attempting to Reconnect to PLC(s) @ IP(s): 
-	192.168.18.25
-	192.168.18.26
-
-=== Wed Feb 19 2025 17:04:32 GMT-0700 (Mountain Standard Time) ===
-Failed to Reconnect to PLC @ IP: 192.168.18.26
-
-=== Wed Feb 19 2025 17:04:32 GMT-0700 (Mountain Standard Time) ===
-Failed to Reconnect to PLC @ IP: 192.168.18.25
-
-=== Wed Feb 19 2025 17:04:52 GMT-0700 (Mountain Standard Time) ===
-Attempting to Reconnect to PLC(s) @ IP(s): 
-	192.168.18.25
-	192.168.18.26
-
-=== Wed Feb 19 2025 17:04:52 GMT-0700 (Mountain Standard Time) ===
-Successfully Reconnected to PLC @ IP: 192.168.18.25
-
-=== Wed Feb 19 2025 17:04:55 GMT-0700 (Mountain Standard Time) ===
-Successfully Reconnected to PLC @ IP: 192.168.18.26
-
-=== Wed Feb 19 2025 17:05:22 GMT-0700 (Mountain Standard Time) ===
-Testing Connections to PLC(s) @ IP(s): 
-	192.168.18.25
-	192.168.18.26
-
-=== Wed Feb 19 2025 17:05:22 GMT-0700 (Mountain Standard Time) ===
+=== Thu Feb 20 2025 12:00:32 GMT-0700 (Mountain Standard Time) ===
 Retained Connection to PLC @ IP: 192.168.18.25
 
-=== Wed Feb 19 2025 17:05:22 GMT-0700 (Mountain Standard Time) ===
+=== Thu Feb 20 2025 12:00:32 GMT-0700 (Mountain Standard Time) ===
+Retained Connection to PLC @ IP: 192.168.18.26
+
+=== Thu Feb 20 2025 12:00:37 GMT-0700 (Mountain Standard Time) ===
+Testing Connections to PLC(s) @ IP(s): 
+	192.168.18.25
+	192.168.18.26
+
+=== Thu Feb 20 2025 12:00:42 GMT-0700 (Mountain Standard Time) ===
+Lost Connection to PLC @ IP: 192.168.18.25
+
+=== Thu Feb 20 2025 12:00:42 GMT-0700 (Mountain Standard Time) ===
+Lost Connection to PLC @ IP: 192.168.18.26
+
+=== Thu Feb 20 2025 12:00:42 GMT-0700 (Mountain Standard Time) ===
+Attempting to Reconnect to PLC(s) @ IP(s): 
+	192.168.18.25
+	192.168.18.26
+
+=== Thu Feb 20 2025 12:00:42 GMT-0700 (Mountain Standard Time) ===
+Failed to Reconnect to PLC @ IP: 192.168.18.25
+
+=== Thu Feb 20 2025 12:00:42 GMT-0700 (Mountain Standard Time) ===
+Failed to Reconnect to PLC @ IP: 192.168.18.26
+
+=== Thu Feb 20 2025 12:00:42 GMT-0700 (Mountain Standard Time) ===
+Attempting to Reconnect to PLC(s) @ IP(s): 
+	192.168.18.25
+	192.168.18.26
+
+=== Thu Feb 20 2025 12:00:42 GMT-0700 (Mountain Standard Time) ===
+Failed to Reconnect to PLC @ IP: 192.168.18.26
+
+=== Thu Feb 20 2025 12:00:42 GMT-0700 (Mountain Standard Time) ===
+Failed to Reconnect to PLC @ IP: 192.168.18.25
+
+=== Thu Feb 20 2025 12:00:47 GMT-0700 (Mountain Standard Time) ===
+Attempting to Reconnect to PLC(s) @ IP(s): 
+	192.168.18.25
+	192.168.18.26
+
+=== Thu Feb 20 2025 12:00:47 GMT-0700 (Mountain Standard Time) ===
+Failed to Reconnect to PLC @ IP: 192.168.18.26
+
+=== Thu Feb 20 2025 12:00:47 GMT-0700 (Mountain Standard Time) ===
+Failed to Reconnect to PLC @ IP: 192.168.18.25
+
+=== Thu Feb 20 2025 12:00:52 GMT-0700 (Mountain Standard Time) ===
+Attempting to Reconnect to PLC(s) @ IP(s): 
+	192.168.18.25
+	192.168.18.26
+
+=== Thu Feb 20 2025 12:00:52 GMT-0700 (Mountain Standard Time) ===
+Successfully Reconnected to PLC @ IP: 192.168.18.25
+
+=== Thu Feb 20 2025 12:00:55 GMT-0700 (Mountain Standard Time) ===
+Successfully Reconnected to PLC @ IP: 192.168.18.26
+
+=== Thu Feb 20 2025 12:00:57 GMT-0700 (Mountain Standard Time) ===
+Testing Connections to PLC(s) @ IP(s): 
+	192.168.18.25
+	192.168.18.26
+
+=== Thu Feb 20 2025 12:00:57 GMT-0700 (Mountain Standard Time) ===
+Retained Connection to PLC @ IP: 192.168.18.26
+
+=== Thu Feb 20 2025 12:00:57 GMT-0700 (Mountain Standard Time) ===
+Retained Connection to PLC @ IP: 192.168.18.25
+
+=== Thu Feb 20 2025 12:01:02 GMT-0700 (Mountain Standard Time) ===
+Testing Connections to PLC(s) @ IP(s): 
+	192.168.18.25
+	192.168.18.26
+
+=== Thu Feb 20 2025 12:01:02 GMT-0700 (Mountain Standard Time) ===
+Retained Connection to PLC @ IP: 192.168.18.26
+
+=== Thu Feb 20 2025 12:01:02 GMT-0700 (Mountain Standard Time) ===
+Retained Connection to PLC @ IP: 192.168.18.25
+
+=== Thu Feb 20 2025 12:01:07 GMT-0700 (Mountain Standard Time) ===
+Testing Connections to PLC(s) @ IP(s): 
+	192.168.18.25
+	192.168.18.26
+
+=== Thu Feb 20 2025 12:01:07 GMT-0700 (Mountain Standard Time) ===
+Retained Connection to PLC @ IP: 192.168.18.25
+
+=== Thu Feb 20 2025 12:01:07 GMT-0700 (Mountain Standard Time) ===
 Retained Connection to PLC @ IP: 192.168.18.26

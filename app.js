@@ -14,7 +14,7 @@ const { exit } = require('process');
 
 
 class Manager {
-    constructor(connAuditInterval = 30000) {
+    constructor(connAuditInterval = 5000) {
         this.ui = new Interface();
         this.driver = new S7CommPlusDriver();
 
@@ -270,7 +270,7 @@ class Manager {
                 // check connection to each PLC IP
                 const connCheckPromises = [...this.connectedIPs].map(async (ip) => {
                     try {
-                        const connCheckResults = await this.driver.CheckConnectionNative(
+                        const connCheckResults = await this.driver.CheckConnection(
                             [ip]
                         );
                         const connCheckRes = connCheckResults[0];
@@ -380,11 +380,6 @@ class S7CommPlusDriver {
         typeName: 'S7CommPlusDriverWrapper.DriverManager',
         methodName: 'CheckConnection'
     });
-    static CHECK_CONNECTION_NATVIE = edge.func({
-        assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
-        typeName: 'S7CommPlusDriverWrapper.DriverManager',
-        methodName: 'CheckConnectionNative'
-    });
     static IS_CONNECTED = true;
     static IS_DISCONNECTED = false;
 
@@ -460,39 +455,6 @@ class S7CommPlusDriver {
                     return;
                 } // else
                 
-
-                // init input object
-                let input = {
-                    ipAddress: ip
-                }
-                S7CommPlusDriver.CHECK_CONNECTION(input, async (error, output) => {
-                    if (error) {
-                        reject(error);
-                        return;
-                    } //else
-                    //CHECK_CONNECTION executed successfully
-
-                    let isConnected = output;
-
-                    if (isConnected) {
-                        resolve(S7CommPlusDriver.IS_CONNECTED);
-                    } else {
-                        resolve(S7CommPlusDriver.IS_DISCONNECTED);
-                    }
-                })
-            })
-        });
-        return Promise.all(connCheckPromises);
-    }
-
-    async CheckConnectionNative(IpArr) {
-        const connCheckPromises = IpArr.map(ip => {
-            return new Promise((resolve,reject) => {
-                if (!this.plcConns.has(ip)) {
-                    resolve(S7CommPlusDriver.IS_DISCONNECTED);
-                    return;
-                } // else
-                
                 // get corresponding sessionID for IP
                 let sessID2 = this.plcConns.get(ip);
 
@@ -500,7 +462,7 @@ class S7CommPlusDriver {
                 let input = {
                     sessionID2: sessID2
                 }
-                S7CommPlusDriver.CHECK_CONNECTION_NATVIE(input, async (error, output) => {
+                S7CommPlusDriver.CHECK_CONNECTION(input, async (error, output) => {
                     if (error) {
                         reject(error);
                         return;
@@ -793,117 +755,3 @@ async function main() {
     
 }
 main();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-static CONN_ISALIVE = true;
-    static CONN_ISDEAD = false;
-    async Ping(ipArr) {
-        const pingPromises = ipArr.map(ip => {
-            return new Promise((resolve,reject) => {
-                if (!this.plcConns.has(ip)) {
-                    reject(new Error(`PLC connection @ IP ${ip} does not exist`));
-                    return;
-                } // else
-
-                ping.sys.probe(ip, (isAlive) => {
-                    if (isAlive) {
-                        resolve({
-                            status: S7CommPlusDriver.CONN_ISALIVE,
-                            IP: ip
-                        });
-                    } else {
-                        resolve({
-                            status: S7CommPlusDriver.CONN_ISDEAD,
-                            IP: ip
-                        });
-                    }
-                });
-
-                // Timeout rejection if no response withing 5 seconds
-                setTimeout(
-                    () => reject(new Error(`Ping request to PLC @ IP ${ip} timed out`)),
-                    5000
-                )
-            });
-        });
-        return Promise.all(pingPromises);
-    }
-*/
