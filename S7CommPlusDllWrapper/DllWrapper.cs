@@ -13,6 +13,7 @@ using S7CommPlusDriver;
 using S7CommPlusDriver.ClientApi;
 using System.Net;
 using System.IO;
+using System.Text;
 
 
 //Note: all function return values are boxed in a Task<object> before being returned
@@ -20,6 +21,12 @@ using System.IO;
 
 namespace S7CommPlusDriverWrapper
 {
+    public class NullConsole : TextWriter 
+    {
+        public override Encoding Encoding => Encoding.UTF8;
+        public override void WriteLine(string value) { }
+        public override void Write(string value) { }
+    }
     public class DriverManager
     {
         private static readonly int ISOTCP_PORT = 102;
@@ -192,7 +199,15 @@ namespace S7CommPlusDriverWrapper
             );
 
             S7CommPlusConnection conn = new S7CommPlusConnection();
-            output.connRes = await Task.Run(() => conn.Connect(ipAddress, password, timeout));
+
+            var origConsoleOut = Console.Out;
+            try {
+                Console.SetOut(new NullConsole());
+                output.connRes = await Task.Run(() => conn.Connect(ipAddress, password, timeout));
+            } finally {
+                Console.SetOut(origConsoleOut);
+            }
+            
             output.sessionID2 = conn.SessionId2;
             if (output.connRes == 0) {
 
@@ -244,9 +259,8 @@ namespace S7CommPlusDriverWrapper
             // (we call the S&CommPlusDriver's ReadValues with an empty address list and supress its console output)
             var res = -1;
             var origConsoleOut = Console.Out;
-            var strWriter = new StringWriter();
             try {
-                Console.SetOut(strWriter);
+                Console.SetOut(new NullConsole());
                 List<object> pseudoVals = new List<object>();
                 List<ulong> pseudoErrors = new List<ulong>();
                 res = await Task.Run(() => conn.ReadValues(new List<ItemAddress>(), out pseudoVals, out pseudoErrors));

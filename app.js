@@ -14,7 +14,7 @@ const { exit } = require('process');
 
 
 class Manager {
-    constructor(connAuditInterval = 5000) {
+    constructor(connAuditInterval = 10000) {
         this.ui = new Interface();
         this.driver = new S7CommPlusDriver();
 
