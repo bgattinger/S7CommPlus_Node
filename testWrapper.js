@@ -6,6 +6,7 @@ const { interval, from, Subject } = require('rxjs');
 const { map, mergeMap } = require('rxjs/operators');
 const readline = require('readline');
 const fs = require('fs');
+const { error } = require('console');
 
 let plcConns = new Map();
 
@@ -625,6 +626,69 @@ const WriteTags = (ipAddress, tagWriteProfiles) => {
 
 
 
+var BrowseTags_ = edge.func({
+    assemblyFile: '.\\S7CommPlusDllWrapper\\bin\\x64\\Debug\\S7CommPlusDllWrapper.dll', 
+    typeName: 'S7CommPlusDriverWrapper.DriverManager',
+    methodName: 'BrowseTags'
+});
+const BrowseTags = (ipAddress) => {
+    return new Promise((resolve,reject) => {
+
+        // check for IP
+        if ( !(plcConns.has(ipAddress)) ) {
+            reject(new Error(
+                "no such PLC connection @ IP: " + ipAddress + " exists"
+            ));
+            return;
+        } // else
+        // retrieve corresponding sessionID for IP
+        let sessionID2 = plcConns.get(ipAddress);
+
+        // init input object
+        let input = {
+            sessionID2: sessionID2,
+        }
+        BrowseTags_(input, (error, output) => {
+            if (error) {
+                reject(error);
+                return;
+            } // else 
+            // Browse executed successfully
+
+            // parse output object
+            let browseRes = output.Item1;
+            let tags = output.Item2;
+
+            if (browseRes != 0) {
+                // Browseing tags was unsuccessful
+                reject(new Error(
+                    "unable to browse Tag values from PLC @ IP: " + ipAddress + " (browse code: " + browseRes + ")"
+                ));
+                return;
+            } // else
+            // Browsing tag values was successful
+
+            resolve({
+                ipAddress: ipAddress,
+                tags: tags
+            });
+        });
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 async function main() {
 
     const rl = readline.createInterface({
@@ -665,10 +729,11 @@ async function main() {
         for (let i = 0; i < targetPlcIPs_connect.length; i++) {
             console.log(JSON.stringify(targetPlcIPs_connect[i], null, 2));
         }
-        MultiConnRes = await MultiConnect(targetPlcIPs_connect)
+        let MultiConnRes = await MultiConnect(targetPlcIPs_connect)
         console.log("Connection Results: \n" + JSON.stringify(MultiConnRes,null,2));
         console.log("\n====================================\n");
 
+        /*
         console.log("\n=== Testing GetDataBlockPlcTags ===\n");
         console.log("getting PlcTags of: " + targetDatablockName1 + 
             "\n\tin PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
@@ -725,13 +790,20 @@ async function main() {
         console.log("Successfully wrote to Plc Tags in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
         console.log("Plc Tag write results: \n " + JSON.stringify(PlcTagWriteResults,null,2));
         console.log("\n====================================\n");
+        */
+
+        console.log("\n=== Testing BrowseTags ===\n");
+        console.log("Browsing Tags in PLC @ IP: " + targetPlcIPs_connect[1].ipAddress);
+        let BrowseTagsRes = await BrowseTags(targetPlcIPs_connect[1].ipAddress);
+        console.log("BrowseTag Results: \n" + JSON.stringify(BrowseTagsRes));
+        console.log("\n====================================\n");
 
         console.log("\n=== Testing Multiple PLC Disconnecting ===\n");
         console.log("Disconnecting from PLC's @ IPs: \n");
         for (let i = 0; i < targetPlcIPs_disconnect.length; i++) {
             console.log(i + ". " + targetPlcIPs_disconnect[i] + "\n");
         }
-        MultiDisconnRes = await MultiDisconnect(targetPlcIPs_disconnect);
+        let MultiDisconnRes = await MultiDisconnect(targetPlcIPs_disconnect);
         console.log("Disconnection Results: \n" + JSON.stringify(MultiDisconnRes, null, 2)); 
         console.log("\n====================================\n");
 

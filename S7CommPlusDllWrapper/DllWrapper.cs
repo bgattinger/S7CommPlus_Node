@@ -8,8 +8,11 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Remoting.Messaging;
 using System.Security;
 using System.Threading.Tasks;
+using System.Net.Sockets;
 using S7CommPlusDriver;
 using S7CommPlusDriver.ClientApi;
+using System.Net;
+
 
 //Note: all function return values are boxed in a Task<object> before being returned
 // The values are then unboxed on the javascript side
@@ -18,6 +21,8 @@ namespace S7CommPlusDriverWrapper
 {
     public class DriverManager
     {
+        private static readonly int ISOTCP_PORT = 102;
+        private static readonly int TCPPING_TIMEOUT = 5000;
         private static Dictionary<UInt32, S7CommPlusConnection> plcConns = new Dictionary<uint, S7CommPlusConnection>();
         private static Dictionary<UInt32, Delegate> dataConversionDict = new Dictionary<uint, Delegate>
         {
@@ -192,7 +197,7 @@ namespace S7CommPlusDriverWrapper
 
                 // connection successful
                 /* DEV NOTE: 
-                    Connect() calls to previously connected IPs seem to yield the same sessionID2 value
+                    Connect() calls to previously connected IPs seem to yield the same sessionID2 value.
                     we allow the plcConns dictionary to remember the previous connection and its sessionID2 value
                     which is why we check for it here */
                 if (plcConns.ContainsKey(output.sessionID2)) {
@@ -206,6 +211,153 @@ namespace S7CommPlusDriverWrapper
             
             return output;
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public async Task<object> CheckConnection(dynamic input)
+        {
+            // Parse input
+            IPEndPoint targetEndPoint = new IPEndPoint(
+                IPAddress.Parse((string)input.ipAddress),
+                ISOTCP_PORT
+            );
+
+            // Init output object (initialize to disconnected value)
+            bool output = false;
+
+            // conudct TCP Ping test
+            using (Socket PingSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+            {
+                try
+                {
+                    // Start the connection
+                    var connectTask = PingSocket.ConnectAsync(targetEndPoint);
+                    var completedTask = await Task.WhenAny(connectTask, Task.Delay(TCPPING_TIMEOUT));
+
+                    // Check if the connect task completed before the timeout
+                    if (completedTask == connectTask)
+                    {
+                        // Ensure the socket is actually connected
+                        if (PingSocket.Connected)
+                        {
+                            output = true;
+                        }
+                    }
+                }
+                catch (SocketException)
+                {
+                    // Catch any socket exceptions (e.g., connection failure)
+                    output = false;
+                }
+            }
+            return output;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+    public async Task<object> CheckConnectionNative(dynamic input) {
+        // parse input
+        UInt32 targetConnSessID = (UInt32)input.sessionID2;
+
+        // Init output object (initialize to connected value)
+        bool output = true;
+
+        // get connection object
+        if (!plcConns.ContainsKey(targetConnSessID)) {
+            return output;
+        } // else 
+        S7CommPlusConnection conn = plcConns[targetConnSessID];
+
+        List<ItemAddress> pseudoAddressList = new List<ItemAddress>();
+        List<object> pseudoValueList = new List<object>();
+        System.Collections.Generic.List<ulong> pseudoErrorList = new System.Collections.Generic.List<ulong>();
+
+
+
+
+
+
+        
+
+        var res = conn.ReadValues(pseudoAddressList, out pseudoValueList, out pseudoErrorList);
+
+        if (res != 0) {
+            output = false;
+        }
+
+        return output;
+    }
+
+
+    
+    /*public async Task<object> CheckConnectionNative(dynamic input) {
+        // parse input
+        UInt32 targetConnSessID = (UInt32)input.sessionID2;
+
+        // Init output object (initialize to connected value)
+        bool output = true;
+
+        // get connection object
+        if (!plcConns.ContainsKey(targetConnSessID)) {
+            return output;
+        } // else 
+        S7CommPlusConnection conn = plcConns[targetConnSessID];
+
+
+
+        FieldInfo s7clientField = typeof(S7CommPlusConnection).GetField("m_client", BindingFlags.NonPublic | BindingFlags.Instance);
+        object s7Client = s7clientField.GetValue(conn);
+
+        FieldInfo msgSocketField = s7Client.GetType().GetField("Socket", BindingFlags.NonPublic | BindingFlags.Instance);
+        object msgSocket = msgSocketField.GetValue(s7Client);
+
+        FieldInfo tcpSocketField = msgSocket.GetType().GetField("TCPSocket", BindingFlags.NonPublic | BindingFlags.Instance);
+        Socket tcpSocket = (Socket)tcpSocketField.GetValue(msgSocket);
+
+        Console.WriteLine(tcpSocket.Poll(1000, SelectMode.SelectRead));
+        Console.WriteLine(tcpSocket.Available == 0);
+
+        if (tcpSocket.Poll(1000, SelectMode.SelectRead) && tcpSocket.Available == 0) {
+            output = false;
+        }
+
+        try {
+            tcpSocket.Send(new byte[1],0,0);
+        } catch (SocketException ex) {
+            if (
+                ex.SocketErrorCode == SocketError.NotConnected ||
+                ex.SocketErrorCode == SocketError.ConnectionReset
+            ) {
+                output = false;
+            } 
+        }
+
+        Console.WriteLine(output);
+
+        return output;
+    }*/
+
 
 
 
@@ -717,7 +869,7 @@ namespace S7CommPlusDriverWrapper
 
 
 
-public async Task<object> ReadTags(dynamic input) {
+        public async Task<object> ReadTags(dynamic input) {
 
             // parse input
             UInt32 targetConnSessID = (UInt32)input.sessionID2;
@@ -771,6 +923,18 @@ public async Task<object> ReadTags(dynamic input) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         public async Task<object> WriteTags(dynamic input) {
 
             // parse input
@@ -819,6 +983,41 @@ public async Task<object> ReadTags(dynamic input) {
             // read tag values into PLC tag objects
             output.writeRes = await Task.Run(() => tagsToWrite.WriteTags(plcConns[targetConnSessID]));
 
+            return output;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public async Task<object> BrowseTags(dynamic input) {
+            // parse input
+            UInt32 targetConnSessID = Convert.ToUInt32(input.sessionID2 ?? 0);
+
+            //init output object (initialize to unsuccessful values)
+            var output = (
+                browseRes: (int)-1,
+                tags: new System.Collections.Generic.List<S7CommPlusDriver.VarInfo>()
+            );
+
+            // get plc connection if it exists
+            if (!plcConns.ContainsKey(targetConnSessID)) {
+                return output;
+            }
+            S7CommPlusConnection conn = plcConns[targetConnSessID];
+
+            output.browseRes = await Task.Run(() => conn.Browse(out output.tags));
+            
             return output;
         }
     }

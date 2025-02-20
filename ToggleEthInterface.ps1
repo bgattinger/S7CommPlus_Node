@@ -1,6 +1,14 @@
+# Function to get the Ethernet interface by name
+function Get-NetworkAdapter {
+    param (
+        [string]$InterfaceName
+    )
+    $adapter = Get-NetAdapter -Name $InterfaceName -ErrorAction SilentlyContinue
+    return $adapter
+}
+
 # Function to disable the Ethernet interface
-function DisableEthernetInterface {
-    $interfaceName = "Ethernet"  # Replace with the actual name of your Ethernet interface if different
+function DisableEthernetInterface($interfaceName) {
     $interface = Get-NetAdapter -Name $interfaceName -ErrorAction SilentlyContinue
     if ($interface) {
         Disable-NetAdapter -Name $interfaceName -Confirm:$false
@@ -11,8 +19,7 @@ function DisableEthernetInterface {
 }
 
 # Function to enable the Ethernet interface
-function EnableEthernetInterface {
-    $interfaceName = "Ethernet"  # Replace with the actual name of your Ethernet interface if different
+function EnableEthernetInterface($interfaceName) {
     $interface = Get-NetAdapter -Name $interfaceName -ErrorAction SilentlyContinue
     if ($interface) {
         Enable-NetAdapter -Name $interfaceName -Confirm:$false
@@ -20,6 +27,16 @@ function EnableEthernetInterface {
     } else {
         Write-Host "Ethernet interface '$interfaceName' not found."
     }
+}
+
+# Ask the user for the Ethernet interface name
+$interfaceName = Read-Host "Enter the Interface name (e.g., 'Ethernet')"
+
+# Check if the interface exists
+$adapter = Get-NetworkAdapter -InterfaceName $interfaceName
+if ($adapter -eq $null) {
+    Write-Host "Ethernet interface '$interfaceName' not found. Please enter a valid interface name."
+    exit
 }
 
 # Loop to keep running and waiting for user input
@@ -33,10 +50,10 @@ while ($true) {
 
     switch ($choice) {
         "1" {
-            DisableEthernetInterface
+            DisableEthernetInterface($interfaceName)
         }
         "2" {
-            EnableEthernetInterface
+            EnableEthernetInterface($interfaceName)
         }
         "3" {
             Write-Host "Exiting script."
